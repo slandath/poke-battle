@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import Footer from './components/Footer.vue'
 import PokemonCard from './components/PokemonCard.vue'
 import SearchForm from './components/SearchForm.vue'
-import { formatPokemonData } from './utils/format'
+import { fetchDamageRelations, formatPokemonData } from './utils/format'
 
 const pokemonData = ref<FormattedPokemon | null>(null)
 const loading = ref(false)
@@ -30,11 +30,12 @@ async function handleSearch(query: string) {
       }
     }
     const data: Pokemon = await response.json()
+    const damageRelations = await fetchDamageRelations(data.types)
     pokemonData.value = formatPokemonData(data)
+    pokemonData.value.damageRelations = damageRelations
   }
   catch (err) {
     error.value = err instanceof Error ? err.message : 'Error fetching data'
-    pokemonData.value = null
   }
   finally {
     loading.value = false

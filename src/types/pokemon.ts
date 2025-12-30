@@ -22,4 +22,11 @@ export interface FormattedPokemon {
   name: string
   types: string[]
   sprites: string | undefined
+  damageRelations?: DamageRelations
+}
+
+export interface DamageRelations {
+  doubleDamageFrom: string[]
+  halfDamageFrom: string[]
+  noDamageFrom: string[]
 }
