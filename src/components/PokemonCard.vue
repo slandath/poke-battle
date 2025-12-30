@@ -21,7 +21,7 @@ defineProps<{
           Type(s): {{ data.types.join(', ') }}
         </p>
       </div>
-      <div class="flex justify-center items-center border mt-3 p-2 bg-gray-100">
+      <div class="flex justify-center items-center border rounded-md mt-3 p-2 bg-gray-100">
         <img :src="data.sprites" :alt="data.name">
       </div>
       <div class="flex p-2 justify-center items-center">
