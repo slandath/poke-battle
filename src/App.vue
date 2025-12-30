@@ -1,31 +1,64 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import type { FormattedPokemon, Pokemon } from './types/pokemon'
+import { ref } from 'vue'
+import Footer from './components/Footer.vue'
+import PokemonCard from './components/PokemonCard.vue'
+import SearchForm from './components/SearchForm.vue'
+import { formatPokemonData } from './utils/format'
+
+const pokemonData = ref<FormattedPokemon | null>(null)
+const loading = ref(false)
+const error = ref('')
+const url = 'https://pokeapi.co/api/v2/pokemon/'
+
+async function handleSearch(query: string) {
+  if (!query.trim())
+    return
+  error.value = ''
+  loading.value = true
+
+  try {
+    const response = await fetch(
+      url + query,
+    )
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Pokemon not found')
+      }
+      else {
+        throw new Error(`API Error: ${response.status}`)
+      }
+    }
+    const data: Pokemon = await response.json()
+    pokemonData.value = formatPokemonData(data)
+  }
+  catch (err) {
+    error.value = err instanceof Error ? err.message : 'Error fetching data'
+    pokemonData.value = null
+  }
+  finally {
+    loading.value = false
+  }
+}
+</script>
 
 <template>
-  <div class="flex min-h-screen flex-col text-center bg-gray-300">
-    <header class="bg-red-500 p-4">
-      <h1 class="text-3xl">
-        Pokemon Battle Tool
-      </h1>
-      <p>Find your opponent's pokemon and view the best type match-ups.</p>
-    </header>
+  <div class="flex min-h-screen flex-col">
+    <div class="text-center">
+      <header class="bg-blue-500 p-4 text-gray-100 text-shadow-md">
+        <h1 class="text-4xl">
+          Pokemon Battle Tool
+        </h1>
+        <div class="my-4" />
+        <p>
+          Find your opponent's pokemon and view the best type match-ups.
+        </p>
+      </header>
+    </div>
     <main class="flex-1 p-4">
-      <div>
-        <label for="pokemon"> Pokemon Name </label>
-      </div>
-      <div>
-        <input id="pokemon" type="text" class="p-1 border">
-      </div>
-      <article class="bg-yellow-500 p-4 mt-4">
-        <p>Pokemon Name</p>
-        <p>Pokemon Generation</p>
-        <p>Pokemon Type</p>
-        <p>Double Damage</p>
-        <p>Half Damage</p>
-        <p>Zero Damage</p>
-      </article>
+      <SearchForm :loading="loading" @search="handleSearch" />
+      <PokemonCard v-if="pokemonData || error" :data="pokemonData" :error="error" />
     </main>
-    <footer class="bg-purple-500 p-4">
-      Footer
-    </footer>
+    <Footer />
   </div>
 </template>
