@@ -9,7 +9,7 @@ const currentYear = computed(() => new Date().getFullYear())
     class="flex items-center justify-center bg-blue-500 p-4 text-gray-100 text-shadow-md"
   >
     <p>&copy; {{ currentYear }} Tom Slanda</p>
-    <a href="https://github.com/slandath/" target="_blank" class="ml-2"><svg
+    <a href="https://github.com/slandath/poke-battle" target="_blank" class="ml-2"><svg
       xmlns="http://www.w3.org/2000/svg"
       fill="#fff"
       width="25"
