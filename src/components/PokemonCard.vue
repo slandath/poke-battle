@@ -30,7 +30,7 @@ defineProps<{
       </div>
       <div class="flex items-center justify-center p-2">
         <p class="text-md font-bold">
-          Damage Received
+          Type Effectiveness
         </p>
       </div>
       <div
@@ -41,7 +41,7 @@ defineProps<{
           <p
             class="flex items-center justify-center rounded-l-md border-r bg-green-400 p-2 text-sm font-bold"
           >
-            Double
+            Weak
           </p>
           <div class="w-full rounded-r-md bg-gray-300 p-2">
             <p class="text-sm">
@@ -53,7 +53,7 @@ defineProps<{
           <p
             class="flex items-center justify-center rounded-l-md border-r bg-pink-400 p-2 text-sm font-bold"
           >
-            Half
+            Resistant
           </p>
           <div class="w-full rounded-r-md bg-gray-300 p-2">
             <p class="text-sm">
@@ -65,7 +65,7 @@ defineProps<{
           <p
             class="flex items-center justify-center rounded-l-md border-r bg-red-500 p-2 text-sm font-bold"
           >
-            None
+            Immune
           </p>
           <div class="w-full rounded-r-md bg-gray-300 p-2">
             <p class="text-sm">

@@ -5,9 +5,9 @@ A simple tool to create optimal pokemon match-ups.
 ## How It Works
 
 - Search for your opponent's pokemon
-- Card will display the pokemon's:
-  - Type(s)
-  - What types deal double, half and no damage to it
+- Card will display:
+  - Pokemon's type(s)
+  - Types to which it is weak, resistant and immune
 
 ## Powered By
 
