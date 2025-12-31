@@ -18,9 +18,7 @@ async function handleSearch(query: string) {
   loading.value = true
 
   try {
-    const response = await fetch(
-      url + query,
-    )
+    const response = await fetch(url + query)
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error('Pokemon not found')
@@ -51,14 +49,16 @@ async function handleSearch(query: string) {
           Pokemon Battle Tool
         </h1>
         <div class="my-4" />
-        <p>
-          Find your opponent's pokemon and view the best type match-ups.
-        </p>
+        <p>Find your opponent's pokemon and view the best type match-ups.</p>
       </header>
     </div>
     <main class="flex-1 p-4">
       <SearchForm :loading="loading" @search="handleSearch" />
-      <PokemonCard v-if="pokemonData || error" :data="pokemonData" :error="error" />
+      <PokemonCard
+        v-if="pokemonData || error"
+        :data="pokemonData"
+        :error="error"
+      />
     </main>
     <Footer />
   </div>

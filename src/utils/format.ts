@@ -1,4 +1,8 @@
-import type { DamageRelations, FormattedPokemon, Pokemon } from '../types/pokemon'
+import type {
+  DamageRelations,
+  FormattedPokemon,
+  Pokemon,
+} from '../types/pokemon'
 
 function capitalize(word: string): string {
   return word.charAt(0).toUpperCase() + word.slice(1)
@@ -25,7 +29,9 @@ export async function fetchDamageRelations(
     noDamageFrom: [],
   }
   for (const typeObj of types) {
-    const response = await fetch(`https://pokeapi.co/api/v2/type/${typeObj.type.name}`)
+    const response = await fetch(
+      `https://pokeapi.co/api/v2/type/${typeObj.type.name}`,
+    )
     const data = await response.json()
 
     data.damage_relations.double_damage_from.forEach((t: any) => {
