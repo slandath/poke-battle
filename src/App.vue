@@ -42,7 +42,7 @@ async function handleSearch(query: string) {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex min-h-screen flex-col bg-gray-100">
     <div class="text-center">
       <header class="bg-blue-500 p-4 text-gray-100 text-shadow-md">
         <h1 class="text-4xl">

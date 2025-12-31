@@ -38,7 +38,7 @@ function handleSubmit() {
           >
           <button
             type="submit"
-            class="cursor-pointer border bg-blue-500 p-2 text-white text-shadow-md"
+            class="cursor-pointer border bg-blue-500 p-2 text-white text-shadow-md rounded-r-md"
             :disabled="loading"
           >
             {{ loading ? 'Searching...' : 'Search' }}
