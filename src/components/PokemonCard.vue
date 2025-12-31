@@ -30,7 +30,7 @@ defineProps<{
       </div>
       <div class="flex items-center justify-center p-2">
         <p class="text-md font-bold">
-          Type Effectivness
+          Type Effectiveness
         </p>
       </div>
       <div
