@@ -23,46 +23,70 @@ export async function fetchDamageRelations(
     }
   }>,
 ): Promise<DamageRelations> {
-  const url = 'https://pokeapi.co/api/v2/type/'
-  const relations: DamageRelations = {
-    doubleDamageFrom: [],
-    halfDamageFrom: [],
-    noDamageFrom: [],
-  }
-  for (const typeObj of types) {
-    const response = await fetch(
-      url + typeObj.type.name,
+  try {
+    const url = 'https://pokeapi.co/api/v2/type/'
+    const relations: DamageRelations = {
+      doubleDamageFrom: [],
+      halfDamageFrom: [],
+      noDamageFrom: [],
+    }
+
+    const responses = await Promise.all(
+      types.map(typeObj => fetch(url + typeObj.type.name)),
     )
-    const data = await response.json()
-
-    data.damage_relations.double_damage_from.forEach((t: any) => {
-      const capitalizedName = capitalize(t.name)
-      if (!relations.doubleDamageFrom.includes(capitalizedName)) {
-        relations.doubleDamageFrom.push(capitalizedName)
+    responses.forEach((response, index) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch type: ${types[index]?.type.name}`)
       }
     })
 
-    data.damage_relations.half_damage_from.forEach((t: any) => {
-      const capitalizedName = capitalize(t.name)
-      if (!relations.halfDamageFrom.includes(capitalizedName)) {
-        relations.halfDamageFrom.push(capitalizedName)
-      }
-    })
+    const dataArray = await Promise.all(
+      responses.map(response => response.json()),
+    )
+    dataArray.forEach((data) => {
+      data.damage_relations.double_damage_from.forEach((t: any) => {
+        const capitalizedName = capitalize(t.name)
+        if (!relations.doubleDamageFrom.includes(capitalizedName)) {
+          relations.doubleDamageFrom.push(capitalizedName)
+        }
+      })
 
-    data.damage_relations.no_damage_from.forEach((t: any) => {
-      const capitalizedName = capitalize(t.name)
-      if (!relations.noDamageFrom.includes(capitalizedName)) {
-        relations.noDamageFrom.push(capitalizedName)
-      }
+      data.damage_relations.half_damage_from.forEach((t: any) => {
+        const capitalizedName = capitalize(t.name)
+        if (!relations.halfDamageFrom.includes(capitalizedName)) {
+          relations.halfDamageFrom.push(capitalizedName)
+        }
+      })
+
+      data.damage_relations.no_damage_from.forEach((t: any) => {
+        const capitalizedName = capitalize(t.name)
+        if (!relations.noDamageFrom.includes(capitalizedName)) {
+          relations.noDamageFrom.push(capitalizedName)
+        }
+      })
     })
+    const overlapTypes = relations.doubleDamageFrom.filter(type =>
+      relations.halfDamageFrom.includes(type),
+    )
+    const noDamageOverlap = relations.halfDamageFrom.filter(type =>
+      relations.noDamageFrom.includes(type),
+    )
+
+    relations.doubleDamageFrom = relations.doubleDamageFrom.filter(
+      type => !overlapTypes.includes(type),
+    )
+    relations.halfDamageFrom = relations.halfDamageFrom.filter(
+      type => !overlapTypes.includes(type),
+    )
+    relations.halfDamageFrom = relations.halfDamageFrom.filter(
+      type => !noDamageOverlap.includes(type),
+    )
+
+    return relations
   }
-
-  const overlapTypes = relations.doubleDamageFrom.filter(type => relations.halfDamageFrom.includes(type))
-  const noDamageOverlap = relations.halfDamageFrom.filter(type => relations.noDamageFrom.includes(type))
-
-  relations.doubleDamageFrom = relations.doubleDamageFrom.filter(type => !overlapTypes.includes(type))
-  relations.halfDamageFrom = relations.halfDamageFrom.filter(type => !overlapTypes.includes(type))
-  relations.halfDamageFrom = relations.halfDamageFrom.filter(type => !noDamageOverlap.includes(type))
-
-  return relations
+  catch (err) {
+    throw new Error(
+      err instanceof Error ? err.message : 'Error fetching damage relations',
+    )
+  }
 }
