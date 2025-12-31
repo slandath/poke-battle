@@ -23,6 +23,7 @@ export async function fetchDamageRelations(
     }
   }>,
 ): Promise<DamageRelations> {
+  const url = 'https://pokeapi.co/api/v2/type/'
   const relations: DamageRelations = {
     doubleDamageFrom: [],
     halfDamageFrom: [],
@@ -30,7 +31,7 @@ export async function fetchDamageRelations(
   }
   for (const typeObj of types) {
     const response = await fetch(
-      `https://pokeapi.co/api/v2/type/${typeObj.type.name}`,
+      url + typeObj.type.name,
     )
     const data = await response.json()
 
@@ -55,6 +56,13 @@ export async function fetchDamageRelations(
       }
     })
   }
+
+  const overlapTypes = relations.doubleDamageFrom.filter(type => relations.halfDamageFrom.includes(type))
+  const noDamageOverlap = relations.halfDamageFrom.filter(type => relations.noDamageFrom.includes(type))
+
+  relations.doubleDamageFrom = relations.doubleDamageFrom.filter(type => !overlapTypes.includes(type))
+  relations.halfDamageFrom = relations.halfDamageFrom.filter(type => !overlapTypes.includes(type))
+  relations.halfDamageFrom = relations.halfDamageFrom.filter(type => !noDamageOverlap.includes(type))
 
   return relations
 }
