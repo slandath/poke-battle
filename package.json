@@ -3,6 +3,10 @@
   "type": "module",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": "25.3.0",
+    "pnpm": ">=8"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
