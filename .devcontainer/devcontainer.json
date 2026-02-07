@@ -6,13 +6,14 @@
   "image": "mcr.microsoft.com/devcontainers/typescript-node:24",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
-  // "features": {},
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "nodeGypDependencies": true
+    }
+  },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
-      ]
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   },
 
@@ -20,7 +21,7 @@
   "forwardPorts": [5173],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "set -e && pnpm install && pnpm build"
+  "postCreateCommand": "npm install -g pnpm && pnpm install && pnpm build"
 
   // Configure tool-specific properties.
   // "customizations": {},
