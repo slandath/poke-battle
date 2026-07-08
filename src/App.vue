@@ -2,6 +2,7 @@
 import type { FormattedPokemon, Pokemon } from './types/pokemon'
 import { ref } from 'vue'
 import Footer from './components/Footer.vue'
+import Header from './components/Header.vue'
 import PokemonCard from './components/PokemonCard.vue'
 import SearchForm from './components/SearchForm.vue'
 import { fetchDamageRelations, formatPokemonData } from './utils/format'
@@ -42,16 +43,8 @@ async function handleSearch(query: string) {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-gray-100">
-    <div class="text-center">
-      <header class="bg-blue-500 p-4 text-gray-100 text-shadow-md">
-        <h1 class="text-4xl">
-          Pokemon Battle Tool
-        </h1>
-        <div class="my-4" />
-        <p>Find your opponent's pokemon and view the best type match-ups.</p>
-      </header>
-    </div>
+  <div class="flex min-h-screen flex-col">
+    <Header />
     <main class="flex-1 p-4">
       <SearchForm :loading="loading" @search="handleSearch" />
       <PokemonCard
