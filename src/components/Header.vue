@@ -15,7 +15,7 @@ import {
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger class="bg-blue-400 text-white mx-10 hover:cursor-pointer" />
+          <NavigationMenuTrigger class="bg-blue-400 text-white mx-10 hover:cursor-pointer" aria-label="menu" />
           <NavigationMenuContent class="bg-blue-500 text-white">
             <ul class="grid w-35 gap-3 p-2">
               <li>
