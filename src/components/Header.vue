@@ -11,25 +11,25 @@ import {
 
 <template>
   <header class="bg-blue-500 p-4 text-gray-100 text-shadow-md flex justify-between">
-    <h1 class="text-4xl">
-      Pokemon Battle Tool
-    </h1>
+    <img src="/pokeball.svg" alt="Pokeball" class="h-10 w-10">
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger class="bg-blue-400 text-white mx-5">
-            Menu
-          </NavigationMenuTrigger>
+          <NavigationMenuTrigger class="bg-blue-400 text-white mx-10 hover:cursor-pointer" />
           <NavigationMenuContent class="bg-blue-500 text-white">
             <ul class="grid w-35 gap-3 p-2">
               <li>
                 <NavigationMenuLink as-child>
-                  <a href="#" class="block hover:bg-blue-400 hover:text-white rounded px-2 py-1 transition-colors">Team</a>
+                  <RouterLink to="/" class="block hover:bg-blue-400 hover:text-white rounded px-2 py-1 transition-colors">
+                    Battle Tool
+                  </RouterLink>
                 </NavigationMenuLink>
               </li>
               <li>
                 <NavigationMenuLink as-child>
-                  <a href="#" class="block hover:bg-blue-400 hover:text-white rounded px-2 py-1 transition-colors">Battle Tool</a>
+                  <RouterLink to="/team" class="block hover:bg-blue-400 hover:text-white rounded px-2 py-1 transition-colors">
+                    Team
+                  </RouterLink>
                 </NavigationMenuLink>
               </li>
             </ul>

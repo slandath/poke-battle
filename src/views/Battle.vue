@@ -26,6 +26,9 @@ async function handleSearch(query: string) {
 </script>
 
 <template>
+  <h1 class="text-3xl p-2">
+    Battle Tool
+  </h1>
   <main class="flex-1 p-4">
     <SearchForm :loading="loading" @search="handleSearch" />
     <PokemonCard
