@@ -20,14 +20,16 @@ export function loadTeam(): FormattedPokemon[] {
   }
 }
 
-export function saveTeam(team: FormattedPokemon[]): void {
+export function saveTeam(team: FormattedPokemon[]): boolean {
   const json = JSON.stringify(team)
   try {
     localStorage.setItem(STORAGE_KEY, json)
+    return true
   }
   catch (err) {
     if (err instanceof Error)
       console.error(err)
+    return false
   }
 }
 
@@ -45,8 +47,13 @@ export function addToTeam(pokemon: FormattedPokemon): AddToTeamResult {
   try {
     team.push(pokemon)
     saveTeam(team)
-    result.success = true
-    result.message = 'Added!'
+    if (saveTeam(team)) {
+      result.success = true
+      result.message = 'Added!'
+    }
+    else {
+      result.message = 'Failed to save team'
+    }
   }
   catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
@@ -60,5 +67,7 @@ export function removeFromTeam(name: string): FormattedPokemon[] {
   const team = loadTeam()
   const updated = team.filter(p => p.name !== name)
   saveTeam(updated)
+  if (!saveTeam(updated))
+    console.error('Failed to persist team removal')
   return updated
 }

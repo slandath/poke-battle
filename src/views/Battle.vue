@@ -25,6 +25,13 @@ async function handleSearch(query: string) {
     loading.value = false
   }
 }
+
+function handleAddToTeam() {
+  if (!pokemonData.value)
+    return
+  const result = addToTeam(pokemonData.value)
+  message.value = result.message
+}
 </script>
 
 <template>
@@ -39,7 +46,7 @@ async function handleSearch(query: string) {
       :error="message"
     />
     <div class="flex justify-center mt-4">
-      <Button v-if="pokemonData" class="hover:cursor-pointer" @click="addToTeam(pokemonData)">
+      <Button v-if="pokemonData" class="hover:cursor-pointer" @click="handleAddToTeam">
         Add to Team
       </Button>
     </div>
