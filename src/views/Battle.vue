@@ -2,6 +2,7 @@
 import type { FormattedPokemon } from '../types/pokemon'
 import { ref } from 'vue'
 import { PokemonCard, SearchForm } from '@/components'
+import { Button } from '@/components/ui/button'
 import { searchPokemon } from '../utils/api'
 
 const pokemonData = ref<FormattedPokemon | null>(null)
@@ -36,5 +37,8 @@ async function handleSearch(query: string) {
       :data="pokemonData"
       :error="error"
     />
+    <Button>
+      Add to Team
+    </Button>
   </main>
 </template>
