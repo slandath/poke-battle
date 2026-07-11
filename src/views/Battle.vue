@@ -3,22 +3,23 @@ import type { FormattedPokemon } from '../types/pokemon'
 import { ref } from 'vue'
 import { PokemonCard, SearchForm } from '@/components'
 import { Button } from '@/components/ui/button'
+import { addToTeam } from '@/utils/team'
 import { searchPokemon } from '../utils/api'
 
 const pokemonData = ref<FormattedPokemon | null>(null)
 const loading = ref(false)
-const error = ref('')
+const message = ref('')
 
 async function handleSearch(query: string) {
   if (!query.trim())
     return
-  error.value = ''
+  message.value = ''
   loading.value = true
   try {
     pokemonData.value = await searchPokemon(query)
   }
   catch (err) {
-    error.value = err instanceof Error ? err.message : 'Error fetching data'
+    message.value = err instanceof Error ? err.message : 'Error fetching data'
   }
   finally {
     loading.value = false
@@ -33,12 +34,14 @@ async function handleSearch(query: string) {
   <main class="flex-1 p-4">
     <SearchForm :loading="loading" @search="handleSearch" />
     <PokemonCard
-      v-if="pokemonData || error"
+      v-if="pokemonData || message"
       :data="pokemonData"
-      :error="error"
+      :error="message"
     />
-    <Button>
-      Add to Team
-    </Button>
+    <div class="flex justify-center mt-4">
+      <Button v-if="pokemonData" class="hover:cursor-pointer" @click="addToTeam(pokemonData)">
+        Add to Team
+      </Button>
+    </div>
   </main>
 </template>

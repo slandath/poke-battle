@@ -55,3 +55,10 @@ export function addToTeam(pokemon: FormattedPokemon): AddToTeamResult {
   }
   return result
 }
+
+export function removeFromTeam(name: string): FormattedPokemon[] {
+  const team = loadTeam()
+  const updated = team.filter(p => p.name !== name)
+  saveTeam(updated)
+  return updated
+}
