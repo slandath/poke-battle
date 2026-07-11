@@ -66,8 +66,8 @@ export function addToTeam(pokemon: FormattedPokemon): AddToTeamResult {
 export function removeFromTeam(name: string): FormattedPokemon[] {
   const team = loadTeam()
   const updated = team.filter(p => p.name !== name)
-  saveTeam(updated)
-  if (!saveTeam(updated))
+  const saved = saveTeam(updated)
+  if (!saved)
     console.error('Failed to persist team removal')
   return updated
 }
