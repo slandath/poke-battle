@@ -1,5 +1,5 @@
+import type { Message } from '@/types/message'
 import type { FormattedPokemon } from '@/types/pokemon'
-import type { AddToTeamResult } from '@/types/team'
 
 const STORAGE_KEY = 'pokemon-team'
 
@@ -33,15 +33,15 @@ export function saveTeam(team: FormattedPokemon[]): boolean {
   }
 }
 
-export function addToTeam(pokemon: FormattedPokemon): AddToTeamResult {
+export function addToTeam(pokemon: FormattedPokemon): Message {
   const team = loadTeam()
-  const result: AddToTeamResult = { success: false, message: '' }
+  const result: Message = { success: false, title: '' }
   if (team.length >= 6) {
-    result.message = 'Team is full'
+    result.title = 'Team is full'
     return result
   }
   if (team.some(p => p.name === pokemon.name)) {
-    result.message = 'Already on team!'
+    result.title = 'Already on team!'
     return result
   }
   try {
@@ -49,16 +49,16 @@ export function addToTeam(pokemon: FormattedPokemon): AddToTeamResult {
     saveTeam(team)
     if (saveTeam(team)) {
       result.success = true
-      result.message = 'Added!'
+      result.title = 'Added!'
     }
     else {
-      result.message = 'Failed to save team'
+      result.title = 'Failed to save team'
     }
   }
   catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error(message)
-    result.message = message
+    result.title = message
   }
   return result
 }

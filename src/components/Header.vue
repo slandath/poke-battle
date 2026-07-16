@@ -21,7 +21,7 @@ import {
               <li>
                 <NavigationMenuLink as-child>
                   <RouterLink to="/" class="block hover:bg-blue-400 hover:text-white rounded px-2 py-1 transition-colors">
-                    Battle Tool
+                    Search
                   </RouterLink>
                 </NavigationMenuLink>
               </li>
