@@ -46,7 +46,6 @@ export function addToTeam(pokemon: FormattedPokemon): Message {
   }
   try {
     team.push(pokemon)
-    saveTeam(team)
     if (saveTeam(team)) {
       result.success = true
       result.title = 'Added!'

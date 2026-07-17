@@ -25,10 +25,8 @@ const buttonState = ref<ButtonState>('default')
 async function handleSearch(query: string) {
   if (!query.trim())
     return
-  message.value = {
-    success: false,
-    title: '',
-  }
+  message.value = null
+  pokemonData.value = null
   loading.value = true
   try {
     pokemonData.value = await searchPokemon(query)

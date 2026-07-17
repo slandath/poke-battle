@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FormattedPokemon } from '../types/pokemon'
 import type { Message } from '@/types/message'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { PokemonCard, SearchForm } from '@/components'
 import MessageWrapper from '@/components/MessageWrapper.vue'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -12,6 +12,10 @@ const pokemonData = ref<FormattedPokemon | null>(null)
 const loading = ref(false)
 const message = ref<Message | null>(null)
 const team = ref<FormattedPokemon[]>(loadTeam())
+
+onMounted(() => {
+  team.value = loadTeam()
+})
 
 async function handleSearch(query: string) {
   if (!query.trim())
@@ -59,7 +63,7 @@ async function handleSearch(query: string) {
       v-if="pokemonData"
       :data="pokemonData"
     />
-    <div class="w-full max-w-sm mx-auto overflow mt-4">
+    <div class="w-full max-w-sm mx-auto mt-4">
       <Table>
         <TableCaption>Your Team ({{ team.length }}/6)</TableCaption>
         <TableHeader>
