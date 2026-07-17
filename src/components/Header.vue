@@ -20,6 +20,13 @@ import {
             <ul class="grid w-35 gap-3 p-2">
               <li>
                 <NavigationMenuLink as-child>
+                  <RouterLink to="/battle" class="block hover:bg-blue-400 hover:text-white rounded px-2 py-1 transition-colors">
+                    Battle
+                  </RouterLink>
+                </NavigationMenuLink>
+              </li>
+              <li>
+                <NavigationMenuLink as-child>
                   <RouterLink to="/" class="block hover:bg-blue-400 hover:text-white rounded px-2 py-1 transition-colors">
                     Search
                   </RouterLink>
