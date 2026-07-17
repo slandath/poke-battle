@@ -4,15 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 defineProps<{
   data: FormattedPokemon | null
-  error: string
 }>()
 </script>
 
 <template>
-  <div v-if="error" class="mt-4 bg-red-500 p-4 text-white">
-    {{ error }}
-  </div>
-  <article v-if="!error && data" class="flex items-center justify-center">
+  <article v-if="data" class="flex items-center justify-center">
     <Card class="mt-4 w-sm bg-yellow-400">
       <CardHeader>
         <CardTitle>

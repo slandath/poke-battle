@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { LoaderCircle, Search } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,9 +35,10 @@ function handleSubmit() {
       <Button
         type="submit"
         :disabled="loading"
-        class="bg-blue-500"
+        class="bg-blue-500 hover:cursor-pointer"
       >
-        {{ loading ? 'Searching...' : 'Search' }}
+        <LoaderCircle v-if="loading" class="size-4 animate-spin" />
+        <Search v-else class="size-4" />
       </Button>
     </div>
   </form>
