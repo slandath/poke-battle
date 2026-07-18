@@ -12,11 +12,13 @@ function handleRemove(name: string) {
 </script>
 
 <template>
-  <h1 class="text-3xl p-2">
-    Team
-  </h1>
-  <p v-if="team.length === 0" class="p-2">
-    Your team is empty. Search for a pokemon to add!
-  </p>
-  <PokemonCollapse v-for="pokemon in team" :key="pokemon.name" :pokemon="pokemon" @remove="handleRemove" />
+  <div class="bg-white">
+    <h1 class="text-3xl p-2">
+      Team
+    </h1>
+    <p v-if="team.length === 0" class="p-2">
+      Your team is empty. Search for a pokemon to add!
+    </p>
+    <PokemonCollapse v-for="pokemon in team" :key="pokemon.name" :pokemon="pokemon" @remove="handleRemove" />
+  </div>
 </template>

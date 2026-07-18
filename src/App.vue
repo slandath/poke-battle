@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Footer from './components/Footer.vue'
 import Header from './components/Header.vue'
 </script>
 
@@ -7,6 +6,5 @@ import Header from './components/Header.vue'
   <div class="flex min-h-screen flex-col">
     <Header />
     <router-view />
-    <Footer />
   </div>
 </template>

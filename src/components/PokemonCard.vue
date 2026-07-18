@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <article v-if="data" class="flex items-center justify-center">
-    <Card class="mt-4 w-sm bg-yellow-400">
+    <Card class="mt-4 w-xs bg-yellow-400">
       <CardHeader>
         <CardTitle>
           <div

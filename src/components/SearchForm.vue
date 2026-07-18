@@ -24,7 +24,7 @@ function handleSubmit() {
 
 <template>
   <form class="flex justify-center" @submit.prevent="handleSubmit">
-    <div class="flex w-full max-w-sm items-center space-x-2">
+    <div class="flex w-full max-w-xs items-center space-x-2">
       <Input
         id="pokemon"
         v-model="searchQuery"

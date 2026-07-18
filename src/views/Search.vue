@@ -72,39 +72,41 @@ function handleAddToTeam() {
 </script>
 
 <template>
-  <h1 class="text-3xl p-2">
-    Search
-  </h1>
-  <main class="flex-1 p-4">
-    <SearchForm :loading="loading" @search="handleSearch" />
-    <div class="flex justify-center mt-4">
-      <MessageWrapper
-        v-if="message && !message.success"
-        :message="message"
-        variant="destructive"
-        show-description
-        class="w-sm bg-red-200"
+  <div class="bg-white">
+    <h1 class="text-3xl p-2">
+      Search
+    </h1>
+    <main class="flex-1 p-4">
+      <SearchForm :loading="loading" @search="handleSearch" />
+      <div class="flex justify-center mt-4">
+        <MessageWrapper
+          v-if="message && !message.success"
+          :message="message"
+          variant="destructive"
+          show-description
+          class="w-sm bg-red-200"
+        />
+      </div>
+      <PokemonCard
+        v-if="pokemonData || message"
+        :data="pokemonData"
       />
-    </div>
-    <PokemonCard
-      v-if="pokemonData || message"
-      :data="pokemonData"
-    />
-    <div class="flex justify-center mt-4">
-      <Button
-        v-if="pokemonData && message?.success"
-        class="hover:cursor-pointer" :class="[
-          buttonState === 'loading' && 'bg-gray-400 cursor-not-allowed',
-          buttonState === 'success' && 'bg-green-600 text-white',
-          buttonState === 'default' && 'bg-blue-500',
-        ]"
-        :disabled="buttonState === 'loading'"
-        @click="handleAddToTeam"
-      >
-        <LoaderCircle v-if="buttonState === 'loading'" class="size-4 animate-spin" />
-        <Check v-else-if="buttonState === 'success'" class="size-4" />
-        <Plus v-else class="size-4" />
-      </Button>
-    </div>
-  </main>
+      <div class="flex justify-center mt-4">
+        <Button
+          v-if="pokemonData && message?.success"
+          class="hover:cursor-pointer" :class="[
+            buttonState === 'loading' && 'bg-gray-400 cursor-not-allowed',
+            buttonState === 'success' && 'bg-green-600 text-white',
+            buttonState === 'default' && 'bg-blue-500',
+          ]"
+          :disabled="buttonState === 'loading'"
+          @click="handleAddToTeam"
+        >
+          <LoaderCircle v-if="buttonState === 'loading'" class="size-4 animate-spin" />
+          <Check v-else-if="buttonState === 'success'" class="size-4" />
+          <Plus v-else class="size-4" />
+        </Button>
+      </div>
+    </main>
+  </div>
 </template>
