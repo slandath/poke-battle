@@ -20,10 +20,8 @@ onMounted(() => {
 async function handleSearch(query: string) {
   if (!query.trim())
     return
-  message.value = {
-    success: false,
-    title: '',
-  }
+  message.value = null
+  pokemonData.value = null
   loading.value = true
   try {
     pokemonData.value = await searchPokemon(query)
@@ -63,7 +61,7 @@ async function handleSearch(query: string) {
       v-if="pokemonData"
       :data="pokemonData"
     />
-    <div class="w-full max-w-sm mx-auto mt-4">
+    <div class="w-full max-w-xs mx-auto mt-4">
       <Table>
         <TableCaption>Your Team ({{ team.length }}/6)</TableCaption>
         <TableHeader>
