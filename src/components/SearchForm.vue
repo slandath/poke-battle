@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { LoaderCircle, Search } from 'lucide-vue-next'
-import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { LoaderCircle, Search } from "lucide-vue-next";
+import { ref } from "vue";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 defineProps<{
-  loading: boolean
-}>()
+  loading: boolean;
+}>();
 
 const emit = defineEmits<{
-  search: [query: string]
-}>()
+  search: [query: string];
+}>();
 
-const searchQuery = ref('')
+const searchQuery = ref("");
 
 function handleSubmit() {
-  if (!searchQuery.value.trim())
-    return
-  emit('search', searchQuery.value)
-  searchQuery.value = ''
+  if (!searchQuery.value.trim()) return;
+  emit("search", searchQuery.value);
+  searchQuery.value = "";
 }
 </script>
 
@@ -32,11 +32,7 @@ function handleSubmit() {
         name="pokemon"
         placeholder="Pokemon Name"
       />
-      <Button
-        type="submit"
-        :disabled="loading"
-        class="bg-blue-500 hover:cursor-pointer"
-      >
+      <Button type="submit" :disabled="loading" class="bg-blue-500 hover:cursor-pointer">
         <LoaderCircle v-if="loading" class="size-4 animate-spin" />
         <Search v-else class="size-4" />
       </Button>

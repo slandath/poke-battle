@@ -25,4 +25,4 @@ dist-ssr
 *.sw?
 
 # AI
-AGENTS.md
+# AGENTS.md removed — replaced by Spec.md

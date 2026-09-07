@@ -61,11 +61,9 @@ pnpm dev
 
 ## Powered By
 
-[![ESLint](https://img.shields.io/badge/ESLint-4B3A8C?logo=eslint&logoColor=white)](https://eslint.org/)
-[![Prettier](https://img.shields.io/badge/Prettier-F7B93E?logo=prettier&logoColor=black)](https://prettier.io/)
+[![Oxlint](https://img.shields.io/badge/Oxlint-00D492?logo=oxc&logoColor=white)](https://oxc.rs/docs/guide/usage/linter.html)
+[![Oxfmt](https://img.shields.io/badge/Oxfmt-00D492?logo=oxc&logoColor=white)](https://oxc.rs/docs/guide/usage/formatter.html)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Vue](https://img.shields.io/badge/Vue-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
-
-- [Antfu's ESLint Config](https://github.com/antfu/eslint-config)

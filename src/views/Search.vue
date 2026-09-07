@@ -1,84 +1,77 @@
 <script setup lang="ts">
-import type { FormattedPokemon } from '../types/pokemon'
-import type { Message } from '@/types/message'
-import { Check, Plus } from 'lucide-vue-next'
-import { onUnmounted, ref } from 'vue'
-import { PokemonCard, SearchForm } from '@/components'
-import MessageWrapper from '@/components/MessageWrapper.vue'
-import { Button } from '@/components/ui/button'
-import { addToTeam } from '@/utils/team'
-import { searchPokemon } from '../utils/api'
+import { Check, Plus } from "lucide-vue-next";
+import { onUnmounted, ref } from "vue";
 
-type ButtonState = 'default' | 'loading' | 'success'
+import { PokemonCard, SearchForm } from "@/components";
+import MessageWrapper from "@/components/MessageWrapper.vue";
+import { Button } from "@/components/ui/button";
+import type { Message } from "@/types/message";
+import { addToTeam } from "@/utils/team";
 
-let stateTimer: ReturnType<typeof setTimeout> | null = null
+import type { FormattedPokemon } from "../types/pokemon";
+import { searchPokemon } from "../utils/api";
+
+type ButtonState = "default" | "loading" | "success";
+
+let stateTimer: ReturnType<typeof setTimeout> | null = null;
 onUnmounted(() => {
-  if (stateTimer)
-    clearTimeout(stateTimer)
-})
+  if (stateTimer) clearTimeout(stateTimer);
+});
 
-const pokemonData = ref<FormattedPokemon | null>(null)
-const loading = ref(false)
-const message = ref<Message | null>(null)
-const buttonState = ref<ButtonState>('default')
+const pokemonData = ref<FormattedPokemon | null>(null);
+const loading = ref(false);
+const message = ref<Message | null>(null);
+const buttonState = ref<ButtonState>("default");
 
 async function handleSearch(query: string) {
-  if (!query.trim())
-    return
-  message.value = null
-  pokemonData.value = null
-  loading.value = true
+  if (!query.trim()) return;
+  message.value = null;
+  pokemonData.value = null;
+  loading.value = true;
   try {
-    pokemonData.value = await searchPokemon(query)
+    pokemonData.value = await searchPokemon(query);
     message.value = {
       success: true,
-      title: 'Pokemon Found!',
-    }
-  }
-  catch (err) {
+      title: "Pokemon Found!",
+    };
+  } catch (err) {
     message.value = {
       success: false,
-      title: err instanceof Error ? err.message : 'Error fetching data',
-    }
-  }
-  finally {
-    loading.value = false
+      title: err instanceof Error ? err.message : "Error fetching data",
+    };
+  } finally {
+    loading.value = false;
   }
 }
 
 function handleAddToTeam() {
-  if (!pokemonData.value || buttonState.value !== 'default')
-    return
-  buttonState.value = 'loading'
+  if (!pokemonData.value || buttonState.value !== "default") return;
+  buttonState.value = "loading";
   stateTimer = setTimeout(() => {
-    if (!pokemonData.value)
-      return
-    const result = addToTeam(pokemonData.value)
+    if (!pokemonData.value) return;
+    const result = addToTeam(pokemonData.value);
     message.value = {
       success: result.success,
       title: result.title,
-    }
+    };
     if (result.success) {
-      buttonState.value = 'success'
+      buttonState.value = "success";
       stateTimer = setTimeout(() => {
-        buttonState.value = 'default'
-      }, 2000)
+        buttonState.value = "default";
+      }, 2000);
+    } else {
+      buttonState.value = "default";
     }
-    else {
-      buttonState.value = 'default'
-    }
-  }, 400)
+  }, 400);
 }
 </script>
 
 <template>
   <div class="bg-white">
-    <h1 class="text-3xl p-2">
-      Search
-    </h1>
+    <h1 class="p-2 text-3xl">Search</h1>
     <main class="flex-1 p-4">
       <SearchForm :loading="loading" @search="handleSearch" />
-      <div class="flex justify-center mt-4">
+      <div class="mt-4 flex justify-center">
         <MessageWrapper
           v-if="message && !message.success"
           :message="message"
@@ -87,15 +80,13 @@ function handleAddToTeam() {
           class="w-sm bg-red-200"
         />
       </div>
-      <PokemonCard
-        v-if="pokemonData || message"
-        :data="pokemonData"
-      />
-      <div class="flex justify-center mt-4">
+      <PokemonCard v-if="pokemonData || message" :data="pokemonData" />
+      <div class="mt-4 flex justify-center">
         <Button
           v-if="pokemonData && message?.success"
-          class="hover:cursor-pointer" :class="[
-            buttonState === 'loading' && 'bg-gray-400 cursor-not-allowed',
+          class="hover:cursor-pointer"
+          :class="[
+            buttonState === 'loading' && 'cursor-not-allowed bg-gray-400',
             buttonState === 'success' && 'bg-green-600 text-white',
             buttonState === 'default' && 'bg-blue-500',
           ]"

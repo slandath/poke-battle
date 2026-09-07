@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import type { NavigationMenuListProps } from 'reka-ui'
-import type { HTMLAttributes } from 'vue'
-import { reactiveOmit } from '@vueuse/core'
-import { NavigationMenuList, useForwardProps } from 'reka-ui'
-import { cn } from '@/lib/utils'
+import { reactiveOmit } from "@vueuse/core";
+import type { NavigationMenuListProps } from "reka-ui";
+import { NavigationMenuList, useForwardProps } from "reka-ui";
+import type { HTMLAttributes } from "vue";
 
-const props = defineProps<NavigationMenuListProps & { class?: HTMLAttributes['class'] }>()
+import { cn } from "@/lib/utils";
 
-const delegatedProps = reactiveOmit(props, 'class')
+const props = defineProps<NavigationMenuListProps & { class?: HTMLAttributes["class"] }>();
 
-const forwardedProps = useForwardProps(delegatedProps)
+const delegatedProps = reactiveOmit(props, "class");
+
+const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
   <NavigationMenuList
     v-bind="forwardedProps"
-    :class="
-      cn(
-        'group flex flex-1 list-none items-center justify-center gap-x-1',
-        props.class,
-      )
-    "
+    :class="cn('group flex flex-1 list-none items-center justify-center gap-x-1', props.class)"
   >
     <slot />
   </NavigationMenuList>
