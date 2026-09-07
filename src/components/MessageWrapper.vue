@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import type { Message } from '@/types/message'
-import { CircleCheck, CircleX } from 'lucide-vue-next'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { cn } from '@/lib/utils'
+import { CircleCheck, CircleX } from "lucide-vue-next";
+import type { HTMLAttributes } from "vue";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+import type { Message } from "@/types/message";
 
 const props = defineProps<{
-  message: Message
-  variant?: 'default' | 'destructive'
-  showDescription?: boolean
-  class?: HTMLAttributes['class']
-}>()
+  message: Message;
+  variant?: "default" | "destructive";
+  showDescription?: boolean;
+  class?: HTMLAttributes["class"];
+}>();
 </script>
 
 <template>

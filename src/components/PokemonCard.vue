@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { FormattedPokemon } from '../types/pokemon'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import type { FormattedPokemon } from "../types/pokemon";
 
 defineProps<{
-  data: FormattedPokemon | null
-}>()
+  data: FormattedPokemon | null;
+}>();
 </script>
 
 <template>
@@ -12,36 +13,23 @@ defineProps<{
     <Card class="mt-4 w-xs bg-yellow-400">
       <CardHeader>
         <CardTitle>
-          <div
-            class="flex items-center justify-between rounded-md bg-gray-300 p-2 shadow"
-          >
+          <div class="flex items-center justify-between rounded-md bg-gray-300 p-2 shadow">
             <p class="text-lg font-bold">
               {{ data.name }}
             </p>
-            <p class="text-sm">
-              Type(s): {{ data.types.join(', ') }}
-            </p>
+            <p class="text-sm">Type(s): {{ data.types.join(", ") }}</p>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div
-          class="flex items-center justify-center rounded-md bg-gray-100 p-2 shadow"
-        >
-          <img v-if="data.sprites" :src="data.sprites" :alt="data.name">
-          <p v-else class="text-sm text-gray-500">
-            No sprite available
-          </p>
+        <div class="flex items-center justify-center rounded-md bg-gray-100 p-2 shadow">
+          <img v-if="data.sprites" :src="data.sprites" :alt="data.name" />
+          <p v-else class="text-sm text-gray-500">No sprite available</p>
         </div>
         <div class="flex items-center justify-center p-2">
-          <p class="text-md font-bold">
-            Type Effectiveness
-          </p>
+          <p class="text-md font-bold">Type Effectiveness</p>
         </div>
-        <div
-          v-if="data.damageRelations"
-          class="rounded-md bg-gray-100 p-3 shadow"
-        >
+        <div v-if="data.damageRelations" class="rounded-md bg-gray-100 p-3 shadow">
           <div class="flex rounded-md">
             <p
               class="flex items-center justify-center rounded-l-md bg-green-400 p-2 text-sm font-bold"
@@ -50,7 +38,7 @@ defineProps<{
             </p>
             <div class="w-full rounded-r-md bg-gray-300 p-2">
               <p class="text-sm">
-                {{ data.damageRelations.doubleDamageFrom.join(', ') }}
+                {{ data.damageRelations.doubleDamageFrom.join(", ") }}
               </p>
             </div>
           </div>
@@ -62,7 +50,7 @@ defineProps<{
             </p>
             <div class="w-full rounded-r-md bg-gray-300 p-2">
               <p class="text-sm">
-                {{ data.damageRelations.halfDamageFrom.join(', ') }}
+                {{ data.damageRelations.halfDamageFrom.join(", ") }}
               </p>
             </div>
           </div>
@@ -74,7 +62,7 @@ defineProps<{
             </p>
             <div class="w-full rounded-r-md bg-gray-300 p-2">
               <p class="text-sm">
-                {{ data.damageRelations.noDamageFrom.join(', ') }}
+                {{ data.damageRelations.noDamageFrom.join(", ") }}
               </p>
             </div>
           </div>
