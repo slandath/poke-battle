@@ -1,7 +1,16 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  ignorePatterns: ["dist", "node_modules", ".pnpm-store", "dist-ssr"],
+  ignorePatterns: [
+    "dist",
+    "node_modules",
+    ".pnpm-store",
+    "dist-ssr",
+    ".nuxt",
+    ".output",
+    ".data",
+    "app/components/ui/**/index.ts",
+  ],
   categories: {
     correctness: "error",
     suspicious: "error",
@@ -10,6 +19,19 @@ export default defineConfig({
   env: {
     browser: true,
     node: true,
+  },
+  globals: {
+    defineNuxtConfig: "readonly",
+    useState: "readonly",
+    useHead: "readonly",
+    useNuxtData: "readonly",
+    navigateTo: "readonly",
+    $fetch: "readonly",
+    ref: "readonly",
+    computed: "readonly",
+    watch: "readonly",
+    onMounted: "readonly",
+    onUnmounted: "readonly",
   },
   options: {
     typeAware: true,
@@ -21,7 +43,7 @@ export default defineConfig({
   },
   overrides: [
     {
-      files: ["src/**/*.{ts,vue}"],
+      files: ["app/**/*.{ts,vue}", "shared/**/*.{ts,vue}"],
       plugins: ["typescript", "vue"],
     },
   ],
