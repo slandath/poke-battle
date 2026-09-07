@@ -11,16 +11,16 @@ Single-page app to search PokeAPI opponents and surface type match-ups for team 
 
 ## 2. Tech Stack
 
-| Layer     | Choice                                                                             | Key config                                                    |
-| --------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Framework | Vue 3 `<script setup lang="ts">`                                                   | `src/App.vue`                                               |
-| Router    | `vue-router`                                                                       | `src/router/index.ts`                                       |
-| Build     | Vite 7                                                                             | `vite.config.ts`                                            |
-| Language  | TypeScript 5.9 strict                                                              | `tsconfig.app.json`, `erasableSyntaxOnly:true`              |
-| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `src/style.css`, `vite.config.ts`                         |
-| UI        | reka-ui + shadcn-vue (`src/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                           |
-| Data      | PokeAPI `https://pokeapi.co`                                                       | `src/utils/api.ts`                                          |
-| State     | `ref()` + `localStorage`                                                           | `src/utils/team.ts`                                         |
+| Layer     | Choice                                                                             | Key config                                            |
+| --------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Framework | Vue 3 `<script setup lang="ts">`                                                   | `src/App.vue`                                         |
+| Router    | `vue-router`                                                                       | `src/router/index.ts`                                 |
+| Build     | Vite 7                                                                             | `vite.config.ts`                                      |
+| Language  | TypeScript 5.9 strict                                                              | `tsconfig.app.json`, `erasableSyntaxOnly:true`        |
+| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `src/style.css`, `vite.config.ts`                     |
+| UI        | reka-ui + shadcn-vue (`src/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                     |
+| Data      | PokeAPI `https://pokeapi.co`                                                       | `src/utils/api.ts`                                    |
+| State     | `ref()` + `localStorage`                                                           | `src/utils/team.ts`                                   |
 | Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts` |
 
 No test framework configured.
