@@ -1,5 +1,6 @@
-import type { FormattedPokemon, Pokemon } from "~/types/pokemon";
-import { fetchDamageRelations, formatPokemonData } from "~/utils/format";
+import type { FormattedPokemon, Pokemon } from "#shared/types/pokemon";
+
+import { fetchDamageRelations, formatPokemonData } from "./format";
 
 const url = "https://pokeapi.co/api/v2/pokemon/";
 

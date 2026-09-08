@@ -1,5 +1,5 @@
-import type { Message } from "~/types/message";
-import type { FormattedPokemon } from "~/types/pokemon";
+import type { Message } from "#shared/types/message";
+import type { FormattedPokemon } from "#shared/types/pokemon";
 
 const STORAGE_KEY = "pokemon-team";
 
