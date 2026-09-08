@@ -27,7 +27,7 @@
   "forwardPorts": [5173],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "npm install -g pnpm && pnpm install && pnpm build && npm install -g opencode-ai"
+  "postCreateCommand": "npm install -g pnpm @railway/cli && pnpm install && pnpm build && npm install -g opencode-ai"
 
   // Configure tool-specific properties.
   // "customizations": {},

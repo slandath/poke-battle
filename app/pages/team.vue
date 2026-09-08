@@ -3,8 +3,8 @@ useHead({ title: "Team - Pokemon Tools" });
 
 const { team, removeFromTeam } = useTeam();
 
-function handleRemove(name: string) {
-  removeFromTeam(name);
+async function handleRemove(name: string) {
+  await removeFromTeam(name);
 }
 </script>
 

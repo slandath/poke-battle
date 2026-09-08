@@ -6,6 +6,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
   css: ["~/assets/css/main.css"],
+  runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL,
+    betterAuthSecret: process.env.BETTER_AUTH_SECRET,
+    betterAuthUrl: process.env.BETTER_AUTH_URL,
+    githubClientId: process.env.GITHUB_CLIENT_ID,
+    githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+  },
   vite: {
     plugins: [tailwindcss()],
   },

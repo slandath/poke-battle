@@ -43,9 +43,9 @@ async function handleSearch(query: string) {
 function handleAddToTeam() {
   if (!pokemonData.value || buttonState.value !== "default") return;
   buttonState.value = "loading";
-  stateTimer = setTimeout(() => {
+  stateTimer = setTimeout(async () => {
     if (!pokemonData.value) return;
-    const result = addToTeam(pokemonData.value);
+    const result = await addToTeam(pokemonData.value);
     message.value = {
       success: result.success,
       title: result.title,

@@ -13,6 +13,9 @@ dist-ssr
 .nuxt
 .output
 .data
+.env
+.env.*
+!.env.example
 *.local
 .pnpm-store
 

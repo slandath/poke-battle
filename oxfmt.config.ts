@@ -22,5 +22,6 @@ export default defineConfig({
     ".nuxt",
     ".output",
     ".data",
+    "server/database/migrations",
   ],
 });

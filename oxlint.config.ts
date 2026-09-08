@@ -10,6 +10,8 @@ export default defineConfig({
     ".output",
     ".data",
     "app/components/ui/**/index.ts",
+    "server/database/migrations",
+    "drizzle.config.ts",
   ],
   categories: {
     correctness: "error",
@@ -43,8 +45,15 @@ export default defineConfig({
   },
   overrides: [
     {
-      files: ["app/**/*.{ts,vue}", "shared/**/*.{ts,vue}"],
+      files: ["app/**/*.{ts,vue}", "shared/**/*.{ts,vue}", "server/**/*.{ts,vue}"],
       plugins: ["typescript", "vue"],
+    },
+    {
+      files: ["server/utils/db.ts", "server/utils/auth.ts"],
+      rules: {
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-redundant-type-constituents": "off",
+      },
     },
   ],
 });
