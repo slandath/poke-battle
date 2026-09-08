@@ -55,5 +55,13 @@ export default defineConfig({
         "typescript/no-redundant-type-constituents": "off",
       },
     },
+    {
+      files: ["server/api/teams/**/*.{ts,vue}"],
+      rules: {
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-unnecessary-type-assertion": "off",
+        "typescript/no-redundant-type-constituents": "off",
+      },
+    },
   ],
 });

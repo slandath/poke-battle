@@ -65,6 +65,8 @@ export function removeFromTeam(name: string): FormattedPokemon[] {
   return updated;
 }
 
+const LEGACY_FALLBACK_ENABLED = false;
+
 export function useTeam() {
   const team = useState<FormattedPokemon[]>("team", () => []);
 
@@ -130,10 +132,14 @@ export function useTeam() {
         team.value = updated;
         return updated;
       }
+      if (LEGACY_FALLBACK_ENABLED) {
+        const updated = removeFromTeam(name);
+        team.value = updated;
+        return updated;
+      }
       console.error(err);
-      const updated = removeFromTeam(name);
-      team.value = updated;
-      return updated;
+      // preserve existing state, propagate error for caller to handle
+      throw err;
     }
   }
 

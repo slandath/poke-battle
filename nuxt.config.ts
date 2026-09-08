@@ -7,11 +7,12 @@ export default defineNuxtConfig({
   ssr: false,
   css: ["~/assets/css/main.css"],
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL,
-    betterAuthSecret: process.env.BETTER_AUTH_SECRET,
-    betterAuthUrl: process.env.BETTER_AUTH_URL,
-    githubClientId: process.env.GITHUB_CLIENT_ID,
-    githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+    databaseUrl: process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL || "",
+    betterAuthSecret: process.env.NUXT_BETTER_AUTH_SECRET || process.env.BETTER_AUTH_SECRET || "",
+    betterAuthUrl: process.env.NUXT_BETTER_AUTH_URL || process.env.BETTER_AUTH_URL || "",
+    githubClientId: process.env.NUXT_GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID || "",
+    githubClientSecret:
+      process.env.NUXT_GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET || "",
   },
   vite: {
     plugins: [tailwindcss()],

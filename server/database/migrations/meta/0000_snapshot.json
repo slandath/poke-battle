@@ -237,7 +237,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "team_user_id_unique": {
+          "name": "team_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -300,7 +308,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "team_pokemon_team_id_name_unique": {
+          "name": "team_pokemon_team_id_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "team_id",
+            "name"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -329,9 +346,10 @@
         },
         "email_verified": {
           "name": "email_verified",
-          "type": "timestamp",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": false
         },
         "image": {
           "name": "image",

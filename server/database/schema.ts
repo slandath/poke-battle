@@ -1,11 +1,20 @@
-import { integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 
 // Better Auth core tables (minimal)
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: timestamp("email_verified"),
+  emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -56,21 +65,26 @@ export const team = pgTable("team", {
   id: serial("id").primaryKey(),
   userId: text("user_id")
     .notNull()
+    .unique()
     .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const teamPokemon = pgTable("team_pokemon", {
-  id: serial("id").primaryKey(),
-  teamId: integer("team_id")
-    .notNull()
-    .references(() => team.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  types: jsonb("types").$type<string[]>().notNull(),
-  sprites: text("sprites"),
-  damageRelations: jsonb("damage_relations").$type<{
-    doubleDamageFrom: string[];
-    halfDamageFrom: string[];
-    noDamageFrom: string[];
-  }>(),
-});
+export const teamPokemon = pgTable(
+  "team_pokemon",
+  {
+    id: serial("id").primaryKey(),
+    teamId: integer("team_id")
+      .notNull()
+      .references(() => team.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    types: jsonb("types").$type<string[]>().notNull(),
+    sprites: text("sprites"),
+    damageRelations: jsonb("damage_relations").$type<{
+      doubleDamageFrom: string[];
+      halfDamageFrom: string[];
+      noDamageFrom: string[];
+    }>(),
+  },
+  (t) => [unique("team_pokemon_team_id_name_unique").on(t.teamId, t.name)],
+);

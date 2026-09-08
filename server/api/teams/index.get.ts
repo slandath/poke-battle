@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const db = useDb();
 
-  // ensure team exists for user (single team per user, minimal)
+  // ensure team exists for user (single team per user, conflict-safe)
   let userTeam = await db
     .select()
     .from(team)
@@ -23,8 +23,19 @@ export default defineEventHandler(async (event) => {
     .then((r: any) => r[0]);
 
   if (!userTeam) {
-    const inserted = await db.insert(team).values({ userId: session.user.id }).returning();
-    userTeam = inserted[0];
+    const inserted = await db
+      .insert(team)
+      .values({ userId: session.user.id })
+      .onConflictDoNothing({ target: team.userId })
+      .returning();
+    const insertedTeam = (inserted as any)[0] as typeof userTeam | undefined;
+    userTeam =
+      insertedTeam ??
+      (await db
+        .select()
+        .from(team)
+        .where(eq(team.userId, session.user.id))
+        .then((r: any) => r[0]));
   }
 
   if (!userTeam) return [];

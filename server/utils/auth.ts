@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
+import * as schema from "../database/schema";
 import { useDb } from "./db";
 
 let cachedAuth: any | null = null;
@@ -18,6 +19,7 @@ export function getAuth(): any {
   cachedAuth = betterAuth({
     database: drizzleAdapter(useDb(), {
       provider: "pg",
+      schema,
     }),
     secret: config.betterAuthSecret || undefined,
     baseURL: config.betterAuthUrl || undefined,
