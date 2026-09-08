@@ -9,9 +9,19 @@ export default defineConfig({
   trailingComma: "all",
   sortImports: true,
   sortTailwindcss: {
-    entryPoint: "src/style.css",
+    entryPoint: "app/assets/css/main.css",
   },
   sortPackageJson: true,
   vueIndentScriptAndStyle: false,
-  ignorePatterns: ["dist", "node_modules", "pnpm-lock.yaml", ".pnpm-store", "dist-ssr"],
+  ignorePatterns: [
+    "dist",
+    "node_modules",
+    "pnpm-lock.yaml",
+    ".pnpm-store",
+    "dist-ssr",
+    ".nuxt",
+    ".output",
+    ".data",
+    "server/database/migrations",
+  ],
 });

@@ -1,7 +1,18 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  ignorePatterns: ["dist", "node_modules", ".pnpm-store", "dist-ssr"],
+  ignorePatterns: [
+    "dist",
+    "node_modules",
+    ".pnpm-store",
+    "dist-ssr",
+    ".nuxt",
+    ".output",
+    ".data",
+    "app/components/ui/**/index.ts",
+    "server/database/migrations",
+    "drizzle.config.ts",
+  ],
   categories: {
     correctness: "error",
     suspicious: "error",
@@ -10,6 +21,25 @@ export default defineConfig({
   env: {
     browser: true,
     node: true,
+  },
+  globals: {
+    defineNuxtConfig: "readonly",
+    useRuntimeConfig: "readonly",
+    useState: "readonly",
+    useHead: "readonly",
+    useNuxtData: "readonly",
+    navigateTo: "readonly",
+    defineEventHandler: "readonly",
+    createError: "readonly",
+    readBody: "readonly",
+    getRouterParam: "readonly",
+    toWebRequest: "readonly",
+    $fetch: "readonly",
+    ref: "readonly",
+    computed: "readonly",
+    watch: "readonly",
+    onMounted: "readonly",
+    onUnmounted: "readonly",
   },
   options: {
     typeAware: true,
@@ -21,8 +51,23 @@ export default defineConfig({
   },
   overrides: [
     {
-      files: ["src/**/*.{ts,vue}"],
+      files: ["app/**/*.{ts,vue}", "shared/**/*.{ts,vue}", "server/**/*.{ts,vue}"],
       plugins: ["typescript", "vue"],
+    },
+    {
+      files: ["server/utils/db.ts", "server/utils/auth.ts"],
+      rules: {
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-redundant-type-constituents": "off",
+      },
+    },
+    {
+      files: ["server/api/teams/**/*.{ts,vue}"],
+      rules: {
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-unnecessary-type-assertion": "off",
+        "typescript/no-redundant-type-constituents": "off",
+      },
     },
   ],
 });

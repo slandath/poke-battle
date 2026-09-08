@@ -23,7 +23,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: ">=8"
+          version: "12.3.4"
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -34,8 +34,42 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Prepare Nuxt types
+        run: pnpm exec nuxt prepare
+        env:
+          NUXT_DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          NUXT_BETTER_AUTH_SECRET: dummy
+          NUXT_BETTER_AUTH_URL: http://localhost:5173
+          NUXT_GITHUB_CLIENT_ID: dummy
+          NUXT_GITHUB_CLIENT_SECRET: dummy
+
       - name: Run oxlint
         run: pnpm exec oxlint
+        env:
+          NUXT_DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          NUXT_BETTER_AUTH_SECRET: dummy
+          NUXT_BETTER_AUTH_URL: http://localhost:5173
+          NUXT_GITHUB_CLIENT_ID: dummy
+          NUXT_GITHUB_CLIENT_SECRET: dummy
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          BETTER_AUTH_SECRET: dummy
+          BETTER_AUTH_URL: http://localhost:5173
+          GITHUB_CLIENT_ID: dummy
+          GITHUB_CLIENT_SECRET: dummy
 
       - name: Check formatting
         run: pnpm exec oxfmt --check
+
+      - name: Typecheck
+        run: pnpm typecheck
+        env:
+          NUXT_DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          NUXT_BETTER_AUTH_SECRET: dummy
+          NUXT_BETTER_AUTH_URL: http://localhost:5173
+          NUXT_GITHUB_CLIENT_ID: dummy
+          NUXT_GITHUB_CLIENT_SECRET: dummy
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          BETTER_AUTH_SECRET: dummy
+          BETTER_AUTH_URL: http://localhost:5173
+          GITHUB_CLIENT_ID: dummy
+          GITHUB_CLIENT_SECRET: dummy
