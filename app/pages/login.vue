@@ -63,15 +63,10 @@ async function handleGitHub() {
   loading.value = true;
   message.value = null;
   try {
-    const { error } = await authClient.signIn.social({
+    await authClient.signIn.social({
       provider: "github",
       callbackURL: "/",
     });
-    if (error) {
-      message.value = { success: false, title: error.message || "GitHub sign in failed" };
-      loading.value = false;
-      return;
-    }
   } catch (err) {
     message.value = {
       success: false,

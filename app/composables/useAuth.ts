@@ -14,8 +14,7 @@ export function useAuth() {
     signIn: authClient.signIn,
     signUp: authClient.signUp,
     async signOut() {
-      const { error } = await authClient.signOut();
-      if (error) return;
+      await authClient.signOut();
       await navigateTo("/");
     },
   };
