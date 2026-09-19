@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
         .select()
         .from(team)
         .where(eq(team.userId, session.user.id))
+        .for("update")
         .then((r: any) => r[0]);
 
       if (!userTeam) {
@@ -48,6 +49,7 @@ export default defineEventHandler(async (event) => {
             .select()
             .from(team)
             .where(eq(team.userId, session.user.id))
+            .for("update")
             .then((r: any) => r[0]));
       }
 
