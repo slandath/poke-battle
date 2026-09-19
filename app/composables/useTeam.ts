@@ -1,71 +1,36 @@
 import type { Message } from "#shared/types/message";
 import type { FormattedPokemon } from "#shared/types/pokemon";
 
-const STORAGE_KEY = "pokemon-team";
-
-// Legacy localStorage helpers (kept for fallback until auth/DB fully replaces)
-export function loadTeam(): FormattedPokemon[] {
-  if (!import.meta.client) return [];
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (data === null) return [];
-  try {
-    const parsedData = JSON.parse(data);
-    if (Array.isArray(parsedData)) return parsedData;
-    return [];
-  } catch (err) {
-    if (err instanceof Error) console.error(err);
-    return [];
-  }
+function httpStatus(err: unknown): number | undefined {
+  if (typeof err !== "object" || err === null) return undefined;
+  if ("statusCode" in err && typeof err.statusCode === "number") return err.statusCode;
+  if ("status" in err && typeof err.status === "number") return err.status;
+  return undefined;
 }
 
-export function saveTeam(team: FormattedPokemon[]): boolean {
-  if (!import.meta.client) return false;
-  const json = JSON.stringify(team);
-  try {
-    localStorage.setItem(STORAGE_KEY, json);
-    return true;
-  } catch (err) {
-    if (err instanceof Error) console.error(err);
-    return false;
+function httpMessage(err: unknown): string | undefined {
+  if (typeof err !== "object" || err === null) return undefined;
+  if (
+    "data" in err &&
+    typeof err.data === "object" &&
+    err.data !== null &&
+    "message" in err.data &&
+    typeof err.data.message === "string"
+  ) {
+    return err.data.message;
   }
+  if ("statusMessage" in err && typeof err.statusMessage === "string") return err.statusMessage;
+  return undefined;
 }
 
-export function addToTeam(pokemon: FormattedPokemon): Message {
-  const team = loadTeam();
-  const result: Message = { success: false, title: "" };
-  if (team.length >= 6) {
-    result.title = "Team is full";
-    return result;
-  }
-  if (team.some((p) => p.name === pokemon.name)) {
-    result.title = "Already on team!";
-    return result;
-  }
-  try {
-    team.push(pokemon);
-    if (saveTeam(team)) {
-      result.success = true;
-      result.title = "Added!";
-    } else {
-      result.title = "Failed to save team";
-    }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error(message);
-    result.title = message;
-  }
-  return result;
+function apiMessage(err: unknown, fallback: string): string {
+  const msg = httpMessage(err);
+  if (msg && !/^\[(GET|POST|PUT|PATCH|DELETE)\] /.test(msg)) return msg;
+  const status = httpStatus(err);
+  if (status === 401) return "Sign in to manage your team";
+  if (status === 503) return "Database unavailable";
+  return fallback;
 }
-
-export function removeFromTeam(name: string): FormattedPokemon[] {
-  const team = loadTeam();
-  const updated = team.filter((p) => p.name !== name);
-  const saved = saveTeam(updated);
-  if (!saved) console.error("Failed to persist team removal");
-  return updated;
-}
-
-const LEGACY_FALLBACK_ENABLED = false;
 
 export function useTeam() {
   const team = useState<FormattedPokemon[]>("team", () => []);
@@ -75,23 +40,16 @@ export function useTeam() {
     try {
       const data = await $fetch<FormattedPokemon[]>("/api/teams");
       team.value = data;
-    } catch (err: any) {
-      // Fallback to localStorage if unauthenticated or DB not configured (dummy URL during lint/typecheck, or private DB without railway run)
-      if (err?.statusCode === 401 || err?.status === 401) {
-        const legacy = loadTeam();
-        team.value = legacy;
+    } catch (err: unknown) {
+      if (httpStatus(err) === 401) {
+        team.value = [];
         return;
       }
-      // If fetch fails for other reason, keep legacy as fallback but log
       console.error(err);
-      const legacy = loadTeam();
-      if (legacy.length) team.value = legacy;
     }
   }
 
-  // Initial load (client-only, ssr:false)
   if (import.meta.client) {
-    // fire-and-forget; pages also call refresh on mount for HMR
     void refresh();
   }
 
@@ -103,19 +61,17 @@ export function useTeam() {
       });
       await refresh();
       return res;
-    } catch (err: any) {
-      const msg = err?.data?.message || err?.statusMessage || err?.message;
+    } catch (err: unknown) {
+      const msg = httpMessage(err);
       if (msg === "Team is full" || msg === "Already on team!") {
         return { success: false, title: msg };
       }
-      // Fallback to legacy localStorage if server unavailable/unauthorized
-      if (err?.statusCode === 401 || err?.status === 401 || !import.meta.client) {
-        const legacy = addToTeam(pokemon);
-        if (legacy.success) team.value = loadTeam();
-        return legacy;
+      if (httpStatus(err) === 401) {
+        await navigateTo("/login");
+        return { success: false, title: "Sign in to add to your team" };
       }
       console.error(err);
-      return { success: false, title: err instanceof Error ? err.message : "Error adding to team" };
+      return { success: false, title: apiMessage(err, "Error adding to team") };
     }
   }
 
@@ -126,27 +82,17 @@ export function useTeam() {
       });
       team.value = data;
       return data;
-    } catch (err: any) {
-      if (err?.statusCode === 401 || err?.status === 401) {
-        const updated = removeFromTeam(name);
-        team.value = updated;
-        return updated;
-      }
-      if (LEGACY_FALLBACK_ENABLED) {
-        const updated = removeFromTeam(name);
-        team.value = updated;
-        return updated;
+    } catch (err: unknown) {
+      if (httpStatus(err) === 401) {
+        await navigateTo("/login");
       }
       console.error(err);
-      // preserve existing state, propagate error for caller to handle
       throw err;
     }
   }
 
   return {
     team,
-    loadTeam,
-    saveTeam,
     addToTeam: add,
     removeFromTeam: remove,
     refresh,
