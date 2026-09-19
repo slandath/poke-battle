@@ -7,21 +7,23 @@
 Single-page app to search PokeAPI opponents and surface type match-ups for team building.
 
 - Search by name → display Pokemon type(s) and type effectiveness (weak / resistant / immune)
-- Build and persist a 6-Pokemon team in the browser
+- Sign in (GitHub or email/password) and persist a 6-Pokemon team in Postgres
 
 ## 2. Tech Stack
 
-| Layer     | Choice                                                                             | Key config                                            |
-| --------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                         |
-| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`       |
-| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                      |
-| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`        |
-| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`           |
-| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                     |
-| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                    |
-| State     | `useState` + `localStorage` via `useTeam`                                          | `app/composables/useTeam.ts`                          |
-| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts` |
+| Layer     | Choice                                                                             | Key config                                                   |
+| --------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                                |
+| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`, `login.vue` |
+| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                             |
+| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`               |
+| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`                  |
+| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                            |
+| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                           |
+| Auth      | Better Auth (GitHub + email/password)                                              | `server/utils/auth.ts`, `app/utils/auth-client.ts`           |
+| DB        | Postgres + Drizzle (`team`, `team_pokemon`)                                        | `server/database/schema.ts`, `server/utils/db.ts`            |
+| State     | `useState` + `/api/teams` via `useTeam`                                            | `app/composables/useTeam.ts`                                 |
+| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts`        |
 
 No test framework configured.
 
@@ -30,15 +32,20 @@ No test framework configured.
 ```
 app/
   app.vue                 # Header + NuxtPage
-  pages/ index.vue, battle.vue, team.vue
+  pages/ index.vue, battle.vue, team.vue, login.vue
   components/
     Header.vue, SearchForm.vue, PokemonCard.vue, PokemonCollapse.vue, MessageWrapper.vue
     ui/                   # alert, button, card, collapsible, input, label, navigation-menu, table
-  composables/ useTeam.ts # global team state (useState) + localStorage
-  utils/ api.ts, format.ts # $fetch
+  composables/ useTeam.ts, useAuth.ts
+  utils/ api.ts, format.ts, auth-client.ts
   types/ pokemon.ts, message.ts
   lib/ utils.ts           # cn() helper
   assets/css/main.css     # Tailwind entry
+server/
+  api/auth/[...all].ts    # Better Auth handler
+  api/teams/              # GET/POST index, DELETE [name]
+  database/schema.ts
+  utils/auth.ts, db.ts
 shared/
   types/ pokemon.ts, message.ts
 ```
@@ -60,6 +67,8 @@ API contracts:
 
 - `GET https://pokeapi.co/api/v2/pokemon/{name}` → `Pokemon`
 - `GET https://pokeapi.co/api/v2/type/{name}` → `damage_relations.{double_damage_from, half_damage_from, no_damage_from}`
+- `GET/POST /api/teams`, `DELETE /api/teams/:name` — session required (401 unauthenticated, 503 DB down)
+- `/api/auth/*` — Better Auth (GitHub callback `/api/auth/callback/github`)
 
 ## 5. Data Flow
 
@@ -71,35 +80,41 @@ API contracts:
 4. `formatPokemonData` `app/utils/format.ts` capitalizes names/types, picks `front_default`
 5. Result `FormattedPokemon + damageRelations` stored in `ref`, rendered via `PokemonCard.vue` + `MessageWrapper`
 
+**Auth flow:**
+
+- Client: `createAuthClient` from `better-auth/vue` in `app/utils/auth-client.ts`
+- `useAuth()` — session, user, signIn/signUp/signOut
+- `/login` — GitHub OAuth + email/password
+- Header shows Sign in or user name + Sign out
+
 **Team flow (`app/composables/useTeam.ts`):**
 
-- `STORAGE_KEY = "pokemon-team"` in `localStorage` (client-only `import.meta.client`)
-- `loadTeam(): FormattedPokemon[]` – JSON parse with fallback `[]`
-- `saveTeam(team)` – `JSON.stringify` → `localStorage`
-- `addToTeam(pokemon): Message` – rejects if `length ≥6` or duplicate `name`
-- `removeFromTeam(name): FormattedPokemon[]` – filter + persist
-- `useTeam()` – global `useState("team")` singleton, `team` ref + `addToTeam`/`removeFromTeam`/`refresh`
-- Views: `pages/index.vue` `handleAddToTeam` (400ms loading + 2s success), `pages/battle.vue` `team` + table, `pages/team.vue` list `PokemonCollapse` with remove
+- Requires Better Auth session; team rows live in Postgres (`team` 1:1 user, `team_pokemon` max 6, unique name per team)
+- `useTeam()` — global `useState("team")`, `refresh` via `GET /api/teams`, `addToTeam` `POST /api/teams`, `removeFromTeam` `DELETE /api/teams/:name`
+- Unauthenticated add → `/login`; 401 clears team; surface server `message` (not raw ofetch `[POST] "/api/teams": 500`)
+- Views: `pages/index.vue` `handleAddToTeam` (400ms loading + 2s success; Sign in to add if logged out), `pages/battle.vue` `team` + table, `pages/team.vue` list `PokemonCollapse` with remove
 
 Error handling: `try/catch`, `err instanceof Error`, user message via `MessageWrapper`, `loading` via `try/finally`.
 
 ## 6. Routing & Component Hierarchy
 
-`app/app.vue` → `Header.vue` (NavigationMenu: Search/Battle/Team) + `NuxtPage`
+`app/app.vue` → `Header.vue` (auth + NavigationMenu: Search/Battle/Team) + `NuxtPage`
 
 - `/` **Search** (`app/pages/index.vue`): `SearchForm` → `MessageWrapper` (error) → `PokemonCard` → add `Button` (states `default/loading/success`)
 - `/battle` **Battle** (`app/pages/battle.vue`): `SearchForm` → `MessageWrapper` → `PokemonCard` → `Table` (team `Name | Type(s)`)
 - `/team` **Team** (`app/pages/team.vue`): `PokemonCollapse` per mon (Collapsible `Trigger/Content` + remove `Button`)
+- `/login` **Sign in** (`app/pages/login.vue`): GitHub + email/password
 
 `PokemonCard.vue` props `data: FormattedPokemon | null` – shows name, types, sprite, effectiveness blocks (Weak/Resistant/Immune).
 
-All `app/components` auto-imported (`components: [{path:"~/components", pathPrefix:false, ignore:["**/index.ts"]}]`), `app/utils` and `app/composables` auto-imported (`searchPokemon`, `useTeam`).
+All `app/components` auto-imported (`components: [{path:"~/components", pathPrefix:false, ignore:["**/index.ts"]}]`), `app/utils` and `app/composables` auto-imported (`searchPokemon`, `useTeam`, `useAuth`).
 
 ## 7. Dev Infra
 
 - **Package manager:** pnpm (Node 24.x) `package.json`
-- **Scripts:** `pnpm dev` (`nuxt dev`), `pnpm build` (`nuxt build`), `pnpm preview` (`nuxt preview`), `pnpm lint` (`oxlint && oxfmt --check`), `pnpm lint:fix` (`oxlint --fix && oxfmt --write`), `pnpm typecheck` (`nuxt typecheck`)
+- **Scripts:** `pnpm dev` (`nuxt dev`), `pnpm build` (`nuxt build`), `pnpm preview` (`nuxt preview`), `pnpm lint` (`oxlint && oxfmt --check`), `pnpm lint:fix` (`oxlint --fix && oxfmt --write`), `pnpm typecheck` (`nuxt typecheck`), `pnpm db:migrate` (`drizzle-kit migrate`)
 - **Lint/Format:** `oxlint.config.ts` `correctness/suspicious: error`, plugins `typescript, vue, unicorn, import, oxc, promise, node`, `typeAware/typeCheck:true`, ignores `.nuxt/.output/.data`; `oxfmt.config.ts` `printWidth:100, tabWidth:2, semi:true, singleQuote:false, trailingComma:all, sortImports:true, sortTailwindcss:{entryPoint:"app/assets/css/main.css"}`
 - **CI:** `.github/workflows/lint.yml` `ubuntu-latest`, `node 24.x`, `pnpm/action-setup@v4`, `actions/setup-node@v4` cache pnpm, `pnpm install --frozen-lockfile`, `pnpm exec oxlint`, `pnpm exec oxfmt --check`, `pnpm typecheck` on push/PR to `main`
 - **Editor:** `.vscode/settings.json` `editor.formatOnSave:true`, `defaultFormatter: oxc.oxc-vscode`, `source.fixAll.oxc:explicit`; extensions `oxc.oxc-vscode`, `Vue.volar`
 - **Dev server:** `nuxt.config.ts` `devServer.host:"0.0.0.0", port:5173` for container port forwarding
+- **DB:** `server/utils/db.ts` SSL off for `*.railway.internal` / localhost; `{ rejectUnauthorized: false }` for public hosts. Runtime `DATABASE_URL` or `NUXT_DATABASE_URL`.

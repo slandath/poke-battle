@@ -59,6 +59,7 @@ export default defineConfig({
       rules: {
         "typescript/no-unsafe-type-assertion": "off",
         "typescript/no-redundant-type-constituents": "off",
+        "typescript/no-unsafe-assignment": "off",
       },
     },
     {

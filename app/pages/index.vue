@@ -18,6 +18,7 @@ const loading = ref(false);
 const message = ref<Message | null>(null);
 const buttonState = ref<ButtonState>("default");
 const { addToTeam } = useTeam();
+const { isAuthenticated } = useAuth();
 
 async function handleSearch(query: string) {
   if (!query.trim()) return;
@@ -41,6 +42,10 @@ async function handleSearch(query: string) {
 }
 
 function handleAddToTeam() {
+  if (!isAuthenticated.value) {
+    message.value = { success: false, title: "Sign in to add to your team" };
+    return;
+  }
   if (!pokemonData.value || buttonState.value !== "default") return;
   buttonState.value = "loading";
   stateTimer = setTimeout(async () => {
@@ -78,8 +83,11 @@ function handleAddToTeam() {
       </div>
       <PokemonCard v-if="pokemonData || message" :data="pokemonData" />
       <div class="mt-4 flex justify-center">
+        <NuxtLink v-if="pokemonData && message?.success && !isAuthenticated" to="/login">
+          <Button class="bg-blue-500 hover:cursor-pointer">Sign in to add</Button>
+        </NuxtLink>
         <Button
-          v-if="pokemonData && message?.success"
+          v-else-if="pokemonData && message?.success"
           class="hover:cursor-pointer"
           :class="[
             buttonState === 'loading' && 'cursor-not-allowed bg-gray-400',

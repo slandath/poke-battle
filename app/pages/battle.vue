@@ -10,9 +10,8 @@ const message = ref<Message | null>(null);
 const { team } = useTeam();
 
 onMounted(() => {
-  // refresh from storage on mount (handles direct nav)
   const { refresh } = useTeam();
-  refresh();
+  void refresh();
 });
 
 async function handleSearch(query: string) {

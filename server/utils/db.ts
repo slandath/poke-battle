@@ -3,26 +3,32 @@ import { Pool } from "pg";
 
 let cachedDb: ReturnType<typeof drizzle> | null = null;
 
+function sslFor(connectionString: string): false | { rejectUnauthorized: boolean } {
+  try {
+    const host = new URL(connectionString).hostname;
+    if (host.endsWith(".railway.internal") || host === "localhost" || host === "127.0.0.1") {
+      return false;
+    }
+  } catch {
+    return { rejectUnauthorized: false };
+  }
+  return { rejectUnauthorized: false };
+}
+
 export function useDb() {
   if (cachedDb) return cachedDb;
 
   const config = useRuntimeConfig() as { databaseUrl?: string };
-  const connectionString = config.databaseUrl;
+  const connectionString =
+    config.databaseUrl || process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL || "";
 
-  // During lint/typecheck with dummy URL, allow missing DB – throw only at runtime
   if (!connectionString) {
-    // Create a dummy pool that will error if actually queried without env
-    const dummyPool = new Pool({
-      connectionString: "postgresql://dummy:dummy@localhost:5432/dummy",
-    });
-    cachedDb = drizzle(dummyPool);
-    return cachedDb;
+    throw createError({ statusCode: 503, message: "Database unavailable" });
   }
 
   const pool = new Pool({
     connectionString,
-    // Railway private network: no SSL
-    ssl: false,
+    ssl: sslFor(connectionString),
   });
 
   cachedDb = drizzle(pool);

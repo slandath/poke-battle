@@ -1,8 +1,11 @@
 import { getAuth } from "../../utils/auth";
+import { rethrowHttpOrUnavailable } from "../../utils/http-error";
 
 export default defineEventHandler((event) => {
-  const auth = getAuth();
-  if (!auth) throw createError({ statusCode: 500, message: "Auth not initialized" });
-  // better-auth expects web Request
-  return auth.handler(toWebRequest(event));
+  try {
+    const auth = getAuth();
+    return auth.handler(toWebRequest(event));
+  } catch (err: unknown) {
+    return rethrowHttpOrUnavailable(err);
+  }
 });
