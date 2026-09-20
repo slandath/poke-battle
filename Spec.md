@@ -38,7 +38,6 @@ app/
     ui/                   # alert, button, card, collapsible, input, label, navigation-menu, table
   composables/ useTeam.ts, useAuth.ts, usePokemonSearch.ts
   utils/ api.ts (PokeAPI HTTP + searchPokemon), format.ts (pure formatting), auth-client.ts
-  types/ pokemon.ts, message.ts
   lib/ utils.ts           # cn() helper
   assets/css/main.css     # Tailwind entry
 server/
@@ -54,7 +53,7 @@ Aliases: `~`/`@` → `app/`, `~~`/`@@` → root, `#shared` → `shared/` via `nu
 
 ## 4. Data Model
 
-`shared/types/pokemon.ts` (also duplicated `app/types/`; consolidation tracked in #37)
+`shared/types/pokemon.ts`
 
 ```ts
 Pokemon { name, types: {slot, type:{name,url}}[], sprites }

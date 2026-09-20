@@ -1,7 +1,6 @@
 <script setup lang="ts">
+import type { FormattedPokemon } from "#shared/types/pokemon";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-
-import type { FormattedPokemon } from "../types/pokemon";
 
 defineProps<{
   data: FormattedPokemon | null;

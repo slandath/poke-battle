@@ -2,9 +2,9 @@
 import { CircleCheck, CircleX } from "lucide-vue-next";
 import type { HTMLAttributes } from "vue";
 
+import type { Message } from "#shared/types/message";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { cn } from "~/lib/utils";
-import type { Message } from "~/types/message";
 
 const props = defineProps<{
   message: Message;

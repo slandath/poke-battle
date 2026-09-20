@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Message } from "~/types/message";
+import type { Message } from "#shared/types/message";
 import { authClient } from "~/utils/auth-client";
 
 useHead({ title: "Sign in - Pokemon Tools" });
