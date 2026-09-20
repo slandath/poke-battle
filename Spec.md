@@ -36,8 +36,8 @@ app/
   components/
     Header.vue, SearchForm.vue, PokemonCard.vue, PokemonCollapse.vue, MessageWrapper.vue
     ui/                   # alert, button, card, collapsible, input, label, navigation-menu, table
-  composables/ useTeam.ts, useAuth.ts
-  utils/ api.ts, format.ts, auth-client.ts
+  composables/ useTeam.ts, useAuth.ts, usePokemonSearch.ts
+  utils/ api.ts (PokeAPI HTTP + searchPokemon), format.ts (pure formatting), auth-client.ts
   types/ pokemon.ts, message.ts
   lib/ utils.ts           # cn() helper
   assets/css/main.css     # Tailwind entry
@@ -54,7 +54,7 @@ Aliases: `~`/`@` → `app/`, `~~`/`@@` → root, `#shared` → `shared/` via `nu
 
 ## 4. Data Model
 
-`shared/types/pokemon.ts` (also duplicated `app/types/`)
+`shared/types/pokemon.ts` (also duplicated `app/types/`; consolidation tracked in #37)
 
 ```ts
 Pokemon { name, types: {slot, type:{name,url}}[], sprites }
@@ -72,13 +72,14 @@ API contracts:
 
 ## 5. Data Flow
 
-**Search flow (`app/utils/api.ts`):**
+**Search flow (`app/utils/api.ts` + `app/composables/usePokemonSearch.ts`):**
 
-1. `SearchForm.vue` emits `search` → `pages/index.vue` / `pages/battle.vue` `handleSearch`
-2. `searchPokemon(query)` via `$fetch` (`ofetch`); on 404 throws `Pokemon not found`, else `API Error: {statusCode}`
-3. `fetchDamageRelations(types)` `app/utils/format.ts` parallel `$fetch` `type/{name}`, merges `damage_relations`, dedupes, filters overlaps (`double ∩ half`, `half ∩ noDamage`)
-4. `formatPokemonData` `app/utils/format.ts` capitalizes names/types, picks `front_default`
-5. Result `FormattedPokemon + damageRelations` stored in `ref`, rendered via `PokemonCard.vue` + `MessageWrapper`
+1. `SearchForm.vue` emits `search` → `pages/index.vue` / `pages/battle.vue` call `usePokemonSearch().search`
+2. `searchPokemon(query)` (`app/utils/api.ts`) via `$fetch` (`ofetch`); on 404 throws `Pokemon not found`, else `API Error: {statusCode}`
+3. `fetchPokemon` then `fetchTypeDamage(types)` parallel `$fetch` `type/{name}` — all PokeAPI HTTP lives in `app/utils/api.ts` with a centralized base URL
+4. `mergeDamageRelations` `app/utils/format.ts` (pure) merges `damage_relations`, dedupes, filters overlaps (`double ∩ half`, `half ∩ noDamage`)
+5. `formatPokemonData` `app/utils/format.ts` (pure) capitalizes names/types, picks `front_default`
+6. Result `FormattedPokemon + damageRelations` held in `usePokemonSearch` state, rendered via `PokemonCard.vue` + `MessageWrapper`
 
 **Auth flow:**
 
