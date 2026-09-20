@@ -1,15 +1,12 @@
 import type { FormattedPokemon, Pokemon, TypeDamageResponse } from "#shared/types/pokemon";
 
+import { getPokeApiEndpoints } from "./apiConfig";
 import { formatPokemonData, mergeDamageRelations } from "./format";
-
-const POKEAPI_BASE_URL = "https://pokeapi.co/api/v2";
-const POKEMON_URL = `${POKEAPI_BASE_URL}/pokemon/`;
-const TYPE_URL = `${POKEAPI_BASE_URL}/type/`;
 
 export async function fetchPokemon(query: string): Promise<Pokemon> {
   const trimmed = query.trim().toLowerCase();
   try {
-    return await $fetch<Pokemon>(`${POKEMON_URL}${encodeURIComponent(trimmed)}`);
+    return await $fetch<Pokemon>(`${getPokeApiEndpoints().pokemon}${encodeURIComponent(trimmed)}`);
   } catch (err: any) {
     // $fetch throws FetchError with statusCode
     if (err?.statusCode === 404 || err?.status === 404) {
@@ -25,9 +22,8 @@ export async function fetchPokemon(query: string): Promise<Pokemon> {
 
 export async function fetchTypeDamage(typeNames: string[]): Promise<TypeDamageResponse[]> {
   try {
-    return await Promise.all(
-      typeNames.map((name) => $fetch<TypeDamageResponse>(`${TYPE_URL}${name}`)),
-    );
+    const { type } = getPokeApiEndpoints();
+    return await Promise.all(typeNames.map((name) => $fetch<TypeDamageResponse>(`${type}${name}`)));
   } catch (err) {
     throw new Error(err instanceof Error ? err.message : "Error fetching damage relations");
   }
