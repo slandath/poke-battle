@@ -59,6 +59,23 @@ pnpm install
 pnpm dev
 ```
 
+### Environment Variables
+
+Copy the template and fill in the values:
+
+```bash
+cp .env.example .env
+```
+
+The PokeAPI URL is optional and defaults to `https://pokeapi.co/api/v2` when unset. Override it per environment (e.g. to point at a mock API in staging/tests):
+
+| Variable                        | Default                  | Purpose                      |
+| ------------------------------- | ------------------------ | ---------------------------- |
+| `NUXT_PUBLIC_POKE_API_BASE_URL` | `https://pokeapi.co/api` | PokeAPI base URL             |
+| `NUXT_PUBLIC_POKE_API_VERSION`  | `v2`                     | PokeAPI version path segment |
+
+Database, Better Auth, and GitHub OAuth variables are required for login and team features; see `.env.example` for the full list.
+
 ## Powered By
 
 [![Oxlint](https://img.shields.io/badge/Oxlint-00D492?logo=oxc&logoColor=white)](https://oxc.rs/docs/guide/usage/linter.html)

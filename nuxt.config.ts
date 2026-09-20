@@ -13,6 +13,10 @@ export default defineNuxtConfig({
     githubClientId: process.env.NUXT_GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID || "",
     githubClientSecret:
       process.env.NUXT_GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET || "",
+    public: {
+      pokeApiBaseUrl: "https://pokeapi.co/api",
+      pokeApiVersion: "v2",
+    },
   },
   vite: {
     plugins: [tailwindcss()],

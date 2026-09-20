@@ -37,7 +37,7 @@ app/
     Header.vue, SearchForm.vue, PokemonCard.vue, PokemonCollapse.vue, MessageWrapper.vue
     ui/                   # alert, button, card, collapsible, input, label, navigation-menu, table
   composables/ useTeam.ts, useAuth.ts, usePokemonSearch.ts
-  utils/ api.ts (PokeAPI HTTP + searchPokemon), format.ts (pure formatting), auth-client.ts
+  utils/ api.ts (PokeAPI HTTP + searchPokemon), apiConfig.ts (endpoints), format.ts (pure formatting), auth-client.ts
   lib/ utils.ts           # cn() helper
   assets/css/main.css     # Tailwind entry
 server/
@@ -64,8 +64,8 @@ Message { success: boolean, title: string, content?: string }
 
 API contracts:
 
-- `GET https://pokeapi.co/api/v2/pokemon/{name}` → `Pokemon`
-- `GET https://pokeapi.co/api/v2/type/{name}` → `damage_relations.{double_damage_from, half_damage_from, no_damage_from}`
+- `GET {NUXT_PUBLIC_POKE_API_BASE_URL}/{NUXT_PUBLIC_POKE_API_VERSION}/pokemon/{name}` → `Pokemon`
+- `GET {NUXT_PUBLIC_POKE_API_BASE_URL}/{NUXT_PUBLIC_POKE_API_VERSION}/type/{name}` → `damage_relations.{double_damage_from, half_damage_from, no_damage_from}`
 - `GET/POST /api/teams`, `DELETE /api/teams/:name` — session required (401 unauthenticated, 503 DB down)
 - `/api/auth/*` — Better Auth (GitHub callback `/api/auth/callback/github`)
 
@@ -75,8 +75,8 @@ API contracts:
 
 1. `SearchForm.vue` emits `search` → `pages/index.vue` / `pages/battle.vue` call `usePokemonSearch().search`
 2. `searchPokemon(query)` (`app/utils/api.ts`) via `$fetch` (`ofetch`); on 404 throws `Pokemon not found`, else `API Error: {statusCode}`
-3. `fetchPokemon` then `fetchTypeDamage(types)` parallel `$fetch` `type/{name}` — all PokeAPI HTTP lives in `app/utils/api.ts` with a centralized base URL
-4. `mergeDamageRelations` `app/utils/format.ts` (pure) merges `damage_relations`, dedupes, filters overlaps (`double ∩ half`, `half ∩ noDamage`)
+3. `fetchPokemon` then `fetchTypeDamage(types)` parallel `$fetch` `type/{name}` — endpoints from `getPokeApiEndpoints()` (`app/utils/apiConfig.ts`), backed by `runtimeConfig.public.pokeApiBaseUrl`/`pokeApiVersion`
+4. `mergeDamageRelations` `app/utils/format.ts` (pure) merges `damage_relations`, dedupes, then `resolveTypeOverlaps` filters conflicts (`double ∩ half`, `half ∩ noDamage`)
 5. `formatPokemonData` `app/utils/format.ts` (pure) capitalizes names/types, picks `front_default`
 6. Result `FormattedPokemon + damageRelations` held in `usePokemonSearch` state, rendered via `PokemonCard.vue` + `MessageWrapper`
 
@@ -117,4 +117,5 @@ All `app/components` auto-imported (`components: [{path:"~/components", pathPref
 - **CI:** `.github/workflows/lint.yml` `ubuntu-latest`, `node 24.x`, `pnpm/action-setup@v4`, `actions/setup-node@v4` cache pnpm, `pnpm install --frozen-lockfile`, `pnpm exec oxlint`, `pnpm exec oxfmt --check`, `pnpm typecheck` on push/PR to `main`
 - **Editor:** `.vscode/settings.json` `editor.formatOnSave:true`, `defaultFormatter: oxc.oxc-vscode`, `source.fixAll.oxc:explicit`; extensions `oxc.oxc-vscode`, `Vue.volar`
 - **Dev server:** `nuxt.config.ts` `devServer.host:"0.0.0.0", port:5173` for container port forwarding
+- **Config:** `nuxt.config.ts` `runtimeConfig.public.pokeApiBaseUrl`/`pokeApiVersion` (defaults `https://pokeapi.co/api`, `v2`), overridable via `NUXT_PUBLIC_POKE_API_BASE_URL`/`NUXT_PUBLIC_POKE_API_VERSION`; consumed by `app/utils/apiConfig.ts`. Other env in `.env.example` (`DATABASE_URL`, `BETTER_AUTH_*`, `GITHUB_*`)
 - **DB:** `server/utils/db.ts` SSL off for `*.railway.internal` / localhost; `{ rejectUnauthorized: false }` for public hosts. Runtime `DATABASE_URL` or `NUXT_DATABASE_URL`.
