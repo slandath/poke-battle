@@ -30,3 +30,11 @@ export interface DamageRelations {
   halfDamageFrom: string[];
   noDamageFrom: string[];
 }
+
+export interface TypeDamageResponse {
+  damage_relations: {
+    double_damage_from: Array<{ name: string }>;
+    half_damage_from: Array<{ name: string }>;
+    no_damage_from: Array<{ name: string }>;
+  };
+}
