@@ -2,9 +2,9 @@
 import { Check, ChevronUp, LoaderCircle, Trash2 } from "lucide-vue-next";
 import { onUnmounted, ref } from "vue";
 
+import type { FormattedPokemon } from "#shared/types/pokemon";
 import { Button } from "~/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
-import type { FormattedPokemon } from "~/types/pokemon.ts";
 
 type RemoveState = "default" | "loading" | "success";
 

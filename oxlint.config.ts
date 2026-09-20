@@ -48,6 +48,17 @@ export default defineConfig({
   rules: {
     "import/no-unassigned-import": "off",
     "preserve-caught-error": "off",
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: ["~/types/*", "~~/types/*", "app/types/*", "../types/*", "../../types/*"],
+            message: "Import shared types from #shared/types/* (see #37).",
+          },
+        ],
+      },
+    ],
   },
   overrides: [
     {
