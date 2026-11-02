@@ -43,6 +43,7 @@ export function useTeam() {
       const data = await $fetch<FormattedPokemon[]>("/api/teams", {
         query: { version },
       });
+      if (selectedVersion.value !== version) return;
       team.value = data;
     } catch (err: unknown) {
       if (httpStatus(err) === 401) {
@@ -84,11 +85,13 @@ export function useTeam() {
   }
 
   async function remove(name: string): Promise<FormattedPokemon[]> {
+    const version = selectedVersion.value;
     try {
       const data = await $fetch<FormattedPokemon[]>(`/api/teams/${encodeURIComponent(name)}`, {
         method: "DELETE",
-        query: { version: selectedVersion.value },
+        query: { version },
       });
+      if (selectedVersion.value !== version) return team.value;
       team.value = data;
       return data;
     } catch (err: unknown) {

@@ -11,19 +11,19 @@ Single-page app to search PokeAPI opponents and surface type match-ups for team 
 
 ## 2. Tech Stack
 
-| Layer     | Choice                                                                             | Key config                                                   |
-| --------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                                |
-| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`, `login.vue` |
-| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                             |
-| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`               |
-| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`                  |
-| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                            |
-| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                           |
-| Auth      | Better Auth (GitHub + email/password)                                              | `server/utils/auth.ts`, `app/utils/auth-client.ts`           |
-| DB        | Postgres + Drizzle (`team`, `team_pokemon`)                                        | `server/database/schema.ts`, `server/utils/db.ts`            |
-| State     | `useState` + `/api/teams` via `useTeam`, game version via `useVersions`           | `app/composables/useTeam.ts`, `app/composables/useVersions.ts` |
-| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts`        |
+| Layer     | Choice                                                                             | Key config                                                     |
+| --------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                                  |
+| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`, `login.vue`   |
+| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                               |
+| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`                 |
+| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`                    |
+| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                              |
+| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                             |
+| Auth      | Better Auth (GitHub + email/password)                                              | `server/utils/auth.ts`, `app/utils/auth-client.ts`             |
+| DB        | Postgres + Drizzle (`team`, `team_pokemon`)                                        | `server/database/schema.ts`, `server/utils/db.ts`              |
+| State     | `useState` + `/api/teams` via `useTeam`, game version via `useVersions`            | `app/composables/useTeam.ts`, `app/composables/useVersions.ts` |
+| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts`          |
 
 No test framework configured.
 

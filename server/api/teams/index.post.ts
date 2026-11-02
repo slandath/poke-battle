@@ -70,7 +70,8 @@ export default defineEventHandler(async (event) => {
           .returning();
         return { ok: true as const, pokemon: inserted };
       } catch (err: any) {
-        if (err?.code === "23505" || err?.message?.includes("team_pokemon_team_id_name_unique")) {
+        const pgCode = err?.code ?? err?.cause?.code;
+        if (pgCode === "23505" || err?.message?.includes("team_pokemon_team_id_name_unique")) {
           return { ok: false as const, statusCode: 400, message: "Already on team!" };
         }
         throw err;

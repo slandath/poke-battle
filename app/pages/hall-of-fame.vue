@@ -13,10 +13,12 @@ const message = ref<{ success: boolean; title: string } | null>(null);
 async function loadHall() {
   if (!import.meta.client || !isAuthenticated.value) return;
   loading.value = true;
+  const requested = filter.value;
   try {
-    entries.value = await $fetch<HallOfFameEntry[]>("/api/hall-of-fame", {
-      query: { version: filter.value },
+    const data = await $fetch<HallOfFameEntry[]>("/api/hall-of-fame", {
+      query: { version: requested },
     });
+    if (filter.value === requested) entries.value = data;
   } catch (err: unknown) {
     console.error(err);
   } finally {
