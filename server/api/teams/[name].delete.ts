@@ -1,9 +1,11 @@
 import { and, eq } from "drizzle-orm";
 
-import { team, teamPokemon } from "../../database/schema";
+import { teamPokemon } from "../../database/schema";
 import { requireSession } from "../../utils/auth";
 import { useDb } from "../../utils/db";
 import { rethrowHttpOrUnavailable } from "../../utils/http-error";
+import { findActiveTeam } from "../../utils/teams";
+import { normalizeVersion } from "../../utils/versions";
 
 export default defineEventHandler(async (event) => {
   const session = await requireSession(event);
@@ -11,15 +13,15 @@ export default defineEventHandler(async (event) => {
   const name = getRouterParam(event, "name");
   if (!name) throw createError({ statusCode: 400, message: "Missing name" });
 
+  const version = normalizeVersion(getQuery(event).version);
+  if (!version) {
+    throw createError({ statusCode: 400, message: "Missing or invalid version" });
+  }
+
   try {
     const db = useDb();
 
-    const userTeam = await db
-      .select()
-      .from(team)
-      .where(eq(team.userId, session.user.id))
-      .then((r: any) => r[0]);
-
+    const userTeam = await findActiveTeam(db, session.user.id, version);
     if (!userTeam) return [];
 
     await db

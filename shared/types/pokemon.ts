@@ -38,3 +38,12 @@ export interface TypeDamageResponse {
     no_damage_from: Array<{ name: string }>;
   };
 }
+
+export interface HallOfFameEntry {
+  id: number;
+  version: string;
+  title?: string;
+  notes?: string;
+  enshrinedAt?: string;
+  pokemon: FormattedPokemon[];
+}

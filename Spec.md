@@ -11,19 +11,19 @@ Single-page app to search PokeAPI opponents and surface type match-ups for team 
 
 ## 2. Tech Stack
 
-| Layer     | Choice                                                                             | Key config                                                   |
-| --------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                                |
-| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`, `login.vue` |
-| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                             |
-| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`               |
-| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`                  |
-| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                            |
-| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                           |
-| Auth      | Better Auth (GitHub + email/password)                                              | `server/utils/auth.ts`, `app/utils/auth-client.ts`           |
-| DB        | Postgres + Drizzle (`team`, `team_pokemon`)                                        | `server/database/schema.ts`, `server/utils/db.ts`            |
-| State     | `useState` + `/api/teams` via `useTeam`                                            | `app/composables/useTeam.ts`                                 |
-| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts`        |
+| Layer     | Choice                                                                             | Key config                                                     |
+| --------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                                  |
+| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`, `login.vue`   |
+| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                               |
+| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`                 |
+| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`                    |
+| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                              |
+| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                             |
+| Auth      | Better Auth (GitHub + email/password)                                              | `server/utils/auth.ts`, `app/utils/auth-client.ts`             |
+| DB        | Postgres + Drizzle (`team`, `team_pokemon`)                                        | `server/database/schema.ts`, `server/utils/db.ts`              |
+| State     | `useState` + `/api/teams` via `useTeam`, game version via `useVersions`            | `app/composables/useTeam.ts`, `app/composables/useVersions.ts` |
+| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts`          |
 
 No test framework configured.
 
@@ -36,15 +36,16 @@ app/
   components/
     Header.vue, SearchForm.vue, PokemonCard.vue, PokemonCollapse.vue, MessageWrapper.vue
     ui/                   # alert, button, card, collapsible, input, label, navigation-menu, table
-  composables/ useTeam.ts, useAuth.ts, usePokemonSearch.ts
+  composables/ useTeam.ts, useAuth.ts, usePokemonSearch.ts, useVersions.ts
   utils/ api.ts (PokeAPI HTTP + searchPokemon), apiConfig.ts (endpoints), format.ts (pure formatting), auth-client.ts
   lib/ utils.ts           # cn() helper
   assets/css/main.css     # Tailwind entry
 server/
   api/auth/[...all].ts    # Better Auth handler
-  api/teams/              # GET/POST index, DELETE [name]
-  database/schema.ts
-  utils/auth.ts, db.ts
+  api/teams/              # GET/POST index (version-scoped active), DELETE [name], POST enshrine
+  api/hall-of-fame/       # GET index (?version=all|slug), DELETE [id]
+  database/schema.ts      # team (version/status/enshrined_at/title/notes) + team_pokemon
+  utils/auth.ts, db.ts, teams.ts (active-team getOrCreate), versions.ts (allowlist)
 shared/
   types/ pokemon.ts, message.ts
 ```
@@ -66,7 +67,9 @@ API contracts:
 
 - `GET {NUXT_PUBLIC_POKE_API_BASE_URL}/{NUXT_PUBLIC_POKE_API_VERSION}/pokemon/{name}` → `Pokemon`
 - `GET {NUXT_PUBLIC_POKE_API_BASE_URL}/{NUXT_PUBLIC_POKE_API_VERSION}/type/{name}` → `damage_relations.{double_damage_from, half_damage_from, no_damage_from}`
-- `GET/POST /api/teams`, `DELETE /api/teams/:name` — session required (401 unauthenticated, 503 DB down)
+- `GET/POST /api/teams?version=`, `DELETE /api/teams/:name?version=` — session required (401 unauthenticated, 503 DB down, 400 missing/invalid version); operate on the **active** roster for `(userId, version)`
+- `POST /api/teams/enshrine {version, title?, notes?}` — freezes the active roster to `enshrined` and starts a fresh active team (400 when active team empty)
+- `GET /api/hall-of-fame?version=<slug|all>`, `DELETE /api/hall-of-fame/:id` — read/delete enshrined memorials (404 not owned / not enshrined)
 - `/api/auth/*` — Better Auth (GitHub callback `/api/auth/callback/github`)
 
 ## 5. Data Flow
@@ -87,12 +90,14 @@ API contracts:
 - `/login` — GitHub OAuth + email/password
 - Header shows Sign in or user name + Sign out
 
-**Team flow (`app/composables/useTeam.ts`):**
+**Team flow (`app/composables/useTeam.ts` + `app/composables/useVersions.ts`):**
 
-- Requires Better Auth session; team rows live in Postgres (`team` 1:1 user, `team_pokemon` max 6, unique name per team)
-- `useTeam()` — global `useState("team")`, `refresh` via `GET /api/teams`, `addToTeam` `POST /api/teams`, `removeFromTeam` `DELETE /api/teams/:name`
+- One **active** roster per `(user, game version)`; `version` is a PokeAPI version slug validated against a static allowlist (`server/utils/versions.ts`)
+- Version `<select>` in `Header.vue` (signed in only), held in `useState("selected-version")` (default `red`), not localStorage
+- `useTeam()` — global `useState("team")` for the selected version's active roster, auto-refreshes on version switch; `refresh` via `GET /api/teams?version=`, `addToTeam` `POST /api/teams {version, pokemon}`, `removeFromTeam` `DELETE /api/teams/:name?version=`, `enshrineTeam` `POST /api/teams/enshrine`
+- Requires Better Auth session; `team` rows are `active` or `enshrined` (partial unique on `(user_id, version)` where active, unlimited memorials); `team_pokemon` max 6 per team, unique name per team
 - Unauthenticated add → `/login`; 401 clears team; surface server `message` (not raw ofetch `[POST] "/api/teams": 500`)
-- Views: `pages/index.vue` `handleAddToTeam` (400ms loading + 2s success; Sign in to add if logged out), `pages/battle.vue` `team` + table, `pages/team.vue` list `PokemonCollapse` with remove
+- Views: `pages/index.vue` `handleAddToTeam` (400ms loading + 2s success; Sign in to add if logged out), `pages/battle.vue` `team` + table, `pages/team.vue` list `PokemonCollapse` with remove + enshrine form (title/notes) → `/hall-of-fame`, `pages/hall-of-fame.vue` read-only memorials grouped by version with delete
 
 Error handling: `try/catch`, `err instanceof Error`, user message via `MessageWrapper`, `loading` via `try/finally`.
 
@@ -102,7 +107,8 @@ Error handling: `try/catch`, `err instanceof Error`, user message via `MessageWr
 
 - `/` **Search** (`app/pages/index.vue`): `SearchForm` → `MessageWrapper` (error) → `PokemonCard` → add `Button` (states `default/loading/success`)
 - `/battle` **Battle** (`app/pages/battle.vue`): `SearchForm` → `MessageWrapper` → `PokemonCard` → `Table` (team `Name | Type(s)`)
-- `/team` **Team** (`app/pages/team.vue`): `PokemonCollapse` per mon (Collapsible `Trigger/Content` + remove `Button`)
+- `/team` **Team** (`app/pages/team.vue`): `PokemonCollapse` per mon (Collapsible `Trigger/Content` + remove `Button`) + enshrine form → `/hall-of-fame`
+- `/hall-of-fame` **Hall of Fame** (`app/pages/hall-of-fame.vue`): version filter + read-only memorials with delete
 - `/login` **Sign in** (`app/pages/login.vue`): GitHub + email/password
 
 `PokemonCard.vue` props `data: FormattedPokemon | null` – shows name, types, sprite, effectiveness blocks (Weak/Resistant/Immune).
