@@ -124,4 +124,4 @@ All `app/components` auto-imported (`components: [{path:"~/components", pathPref
 - **Editor:** `.vscode/settings.json` `editor.formatOnSave:true`, `defaultFormatter: oxc.oxc-vscode`, `source.fixAll.oxc:explicit`; extensions `oxc.oxc-vscode`, `Vue.volar`
 - **Dev server:** `nuxt.config.ts` `devServer.host:"0.0.0.0", port:5173` for container port forwarding
 - **Config:** `nuxt.config.ts` `runtimeConfig.public.pokeApiBaseUrl`/`pokeApiVersion` (defaults `https://pokeapi.co/api`, `v2`), overridable via `NUXT_PUBLIC_POKE_API_BASE_URL`/`NUXT_PUBLIC_POKE_API_VERSION`; consumed by `app/utils/apiConfig.ts`. Other env in `.env.example` (`DATABASE_URL`, `BETTER_AUTH_*`, `GITHUB_*`)
-- **DB:** `server/utils/db.ts` SSL off for `*.railway.internal` / localhost; `{ rejectUnauthorized: false }` for public hosts. Runtime `DATABASE_URL` or `NUXT_DATABASE_URL`.
+- **DB:** `server/utils/db.ts` SSL off for `*.railway.internal` / localhost; `{ rejectUnauthorized: false }` for public hosts. Runtime `DATABASE_URL` or `NUXT_DATABASE_URL`. Pending migrations auto-apply on boot (`server/plugins/01.db-migrate.ts`, skipped when no DB configured); `pnpm db:migrate` for manual runs.
