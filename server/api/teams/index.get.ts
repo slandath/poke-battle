@@ -1,38 +1,24 @@
 import { eq } from "drizzle-orm";
 
-import { team, teamPokemon } from "../../database/schema";
+import { teamPokemon } from "../../database/schema";
 import { requireSession } from "../../utils/auth";
 import { useDb } from "../../utils/db";
 import { rethrowHttpOrUnavailable } from "../../utils/http-error";
+import { getOrCreateActiveTeam } from "../../utils/teams";
+import { normalizeVersion } from "../../utils/versions";
 
 export default defineEventHandler(async (event) => {
   const session = await requireSession(event);
 
+  const version = normalizeVersion(getQuery(event).version);
+  if (!version) {
+    throw createError({ statusCode: 400, message: "Missing or invalid version" });
+  }
+
   try {
     const db = useDb();
 
-    let userTeam = await db
-      .select()
-      .from(team)
-      .where(eq(team.userId, session.user.id))
-      .then((r: any) => r[0]);
-
-    if (!userTeam) {
-      const inserted = await db
-        .insert(team)
-        .values({ userId: session.user.id })
-        .onConflictDoNothing({ target: team.userId })
-        .returning();
-      const insertedTeam = (inserted as any)[0] as typeof userTeam | undefined;
-      userTeam =
-        insertedTeam ??
-        (await db
-          .select()
-          .from(team)
-          .where(eq(team.userId, session.user.id))
-          .then((r: any) => r[0]));
-    }
-
+    const userTeam = await getOrCreateActiveTeam(db, session.user.id, version);
     if (!userTeam) return [];
 
     const pokemons = await db.select().from(teamPokemon).where(eq(teamPokemon.teamId, userTeam.id));

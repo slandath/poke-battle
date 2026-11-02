@@ -9,12 +9,39 @@ import {
 } from "~/components/ui/navigation-menu";
 
 const { user, isAuthenticated, isPending, signOut } = useAuth();
+const { versions, selectedVersion, selectVersion, loadVersions } = useVersions();
+const { refresh } = useTeam();
+
+onMounted(() => {
+  void loadVersions();
+});
+
+async function handleVersionChange(event: Event) {
+  const value = (event.target as HTMLSelectElement).value;
+  selectVersion(value);
+  await refresh();
+}
 </script>
 
 <template>
   <header class="flex items-center justify-between bg-blue-500 p-4 text-gray-100 text-shadow-md">
     <img src="/pokeball.svg" alt="Pokeball" class="h-10 w-10" />
     <div class="flex items-center gap-4">
+      <select
+        v-if="isAuthenticated && !isPending"
+        :value="selectedVersion"
+        aria-label="Game version"
+        class="rounded bg-blue-400 px-2 py-1 text-sm text-white"
+        @change="handleVersionChange"
+      >
+        <option
+          v-for="version in versions.length > 0 ? versions : [selectedVersion]"
+          :key="version"
+          :value="version"
+        >
+          {{ version }}
+        </option>
+      </select>
       <div v-if="!isPending" class="text-sm">
         <NuxtLink
           v-if="!isAuthenticated"
@@ -70,6 +97,16 @@ const { user, isAuthenticated, isPending, signOut } = useAuth();
                       class="block rounded px-2 py-1 transition-colors hover:bg-blue-400 hover:text-white"
                     >
                       Team
+                    </NuxtLink>
+                  </NavigationMenuLink>
+                </li>
+                <li>
+                  <NavigationMenuLink as-child>
+                    <NuxtLink
+                      to="/hall-of-fame"
+                      class="block rounded px-2 py-1 transition-colors hover:bg-blue-400 hover:text-white"
+                    >
+                      Hall of Fame
                     </NuxtLink>
                   </NavigationMenuLink>
                 </li>

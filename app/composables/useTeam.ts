@@ -33,12 +33,16 @@ function apiMessage(err: unknown, fallback: string): string {
 }
 
 export function useTeam() {
+  const selectedVersion = useState<string>("selected-version", () => "red");
   const team = useState<FormattedPokemon[]>("team", () => []);
 
   async function refresh() {
     if (!import.meta.client) return;
+    const version = selectedVersion.value;
     try {
-      const data = await $fetch<FormattedPokemon[]>("/api/teams");
+      const data = await $fetch<FormattedPokemon[]>("/api/teams", {
+        query: { version },
+      });
       team.value = data;
     } catch (err: unknown) {
       if (httpStatus(err) === 401) {
@@ -49,15 +53,19 @@ export function useTeam() {
     }
   }
 
-  if (import.meta.client) {
+  if (import.meta.client && team.value.length === 0) {
     void refresh();
   }
+
+  watch(selectedVersion, () => {
+    void refresh();
+  });
 
   async function add(pokemon: FormattedPokemon): Promise<Message> {
     try {
       const res = await $fetch<{ success: boolean; title: string }>("/api/teams", {
         method: "POST",
-        body: { pokemon },
+        body: { version: selectedVersion.value, pokemon },
       });
       await refresh();
       return res;
@@ -79,6 +87,7 @@ export function useTeam() {
     try {
       const data = await $fetch<FormattedPokemon[]>(`/api/teams/${encodeURIComponent(name)}`, {
         method: "DELETE",
+        query: { version: selectedVersion.value },
       });
       team.value = data;
       return data;
@@ -91,10 +100,30 @@ export function useTeam() {
     }
   }
 
+  async function enshrine(title?: string, notes?: string): Promise<Message> {
+    try {
+      const res = await $fetch<{ success: boolean; title: string }>("/api/teams/enshrine", {
+        method: "POST",
+        body: { version: selectedVersion.value, title, notes },
+      });
+      await refresh();
+      return res;
+    } catch (err: unknown) {
+      if (httpStatus(err) === 401) {
+        await navigateTo("/login");
+        return { success: false, title: "Sign in to enshrine your team" };
+      }
+      console.error(err);
+      return { success: false, title: apiMessage(err, "Error enshrining team") };
+    }
+  }
+
   return {
     team,
+    selectedVersion,
     addToTeam: add,
     removeFromTeam: remove,
+    enshrineTeam: enshrine,
     refresh,
   };
 }

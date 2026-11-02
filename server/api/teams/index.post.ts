@@ -1,14 +1,17 @@
 import { eq } from "drizzle-orm";
 
-import { team, teamPokemon } from "../../database/schema";
+import { teamPokemon } from "../../database/schema";
 import { requireSession } from "../../utils/auth";
 import { useDb } from "../../utils/db";
 import { rethrowHttpOrUnavailable } from "../../utils/http-error";
+import { getOrCreateActiveTeam } from "../../utils/teams";
+import { normalizeVersion } from "../../utils/versions";
 
 export default defineEventHandler(async (event) => {
   const session = await requireSession(event);
 
   const body = await readBody<{
+    version: string;
     pokemon: {
       name: string;
       types: string[];
@@ -21,6 +24,11 @@ export default defineEventHandler(async (event) => {
     };
   }>(event);
 
+  const version = normalizeVersion(body?.version);
+  if (!version) {
+    throw createError({ statusCode: 400, message: "Missing or invalid version" });
+  }
+
   if (!body?.pokemon?.name || !Array.isArray(body.pokemon.types)) {
     throw createError({ statusCode: 400, message: "Invalid pokemon payload" });
   }
@@ -29,29 +37,7 @@ export default defineEventHandler(async (event) => {
     const db = useDb();
 
     const result = await db.transaction(async (tx) => {
-      let userTeam = await tx
-        .select()
-        .from(team)
-        .where(eq(team.userId, session.user.id))
-        .for("update")
-        .then((r: any) => r[0]);
-
-      if (!userTeam) {
-        const inserted = await tx
-          .insert(team)
-          .values({ userId: session.user.id })
-          .onConflictDoNothing({ target: team.userId })
-          .returning();
-        const insertedTeam = (inserted as any)[0] as typeof userTeam | undefined;
-        userTeam =
-          insertedTeam ??
-          (await tx
-            .select()
-            .from(team)
-            .where(eq(team.userId, session.user.id))
-            .for("update")
-            .then((r: any) => r[0]));
-      }
+      const userTeam = await getOrCreateActiveTeam(tx, session.user.id, version);
 
       if (!userTeam) {
         return { ok: false as const, statusCode: 500, message: "Failed to create team" };

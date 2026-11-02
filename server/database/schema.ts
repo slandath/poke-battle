@@ -65,8 +65,12 @@ export const team = pgTable("team", {
   id: serial("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .unique()
     .references(() => user.id, { onDelete: "cascade" }),
+  version: text("version").notNull().default("red"),
+  status: text("status").notNull().default("active"),
+  enshrinedAt: timestamp("enshrined_at"),
+  title: text("title"),
+  notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
