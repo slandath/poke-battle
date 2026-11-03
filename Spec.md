@@ -11,21 +11,21 @@ Single-page app to search PokeAPI opponents and surface type match-ups for team 
 
 ## 2. Tech Stack
 
-| Layer     | Choice                                                                             | Key config                                                     |
-| --------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                                  |
-| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`, `login.vue`   |
-| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                               |
-| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`                 |
-| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`                    |
-| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                              |
-| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                             |
-| Auth      | Better Auth (GitHub + email/password)                                              | `server/utils/auth.ts`, `app/utils/auth-client.ts`             |
-| DB        | Postgres + Drizzle (`team`, `team_pokemon`)                                        | `server/database/schema.ts`, `server/utils/db.ts`              |
-| State     | `useState` + `/api/teams` via `useTeam`, game version via `useVersions`            | `app/composables/useTeam.ts`, `app/composables/useVersions.ts` |
-| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt                                     | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts`          |
+| Layer     | Choice                                                                             | Key config                                                                |
+| --------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Framework | Nuxt 4 (Vue 3 `<script setup lang="ts">`)                                          | `app/app.vue`                                                             |
+| Router    | Nuxt file-based (`app/pages/`)                                                     | `app/pages/index.vue`, `battle.vue`, `team.vue`, `login.vue`              |
+| Build     | Nuxt + Vite                                                                        | `nuxt.config.ts`                                                          |
+| Language  | TypeScript 5.9 strict                                                              | `nuxt.config.ts` `typescript.strict/typeCheck`                            |
+| Styling   | Tailwind CSS v4 + `@tailwindcss/vite`                                              | `app/assets/css/main.css`, `nuxt.config.ts`                               |
+| UI        | reka-ui + shadcn-vue (`app/components/ui/*`) + `lucide-vue-next`, `@remixicon/vue` | `components.json`                                                         |
+| Data      | PokeAPI `https://pokeapi.co`                                                       | `app/utils/api.ts`                                                        |
+| Auth      | Better Auth (GitHub + email/password)                                              | `server/utils/auth.ts`, `app/utils/auth-client.ts`                        |
+| DB        | Postgres + Drizzle (`team`, `team_pokemon`)                                        | `server/database/schema.ts`, `server/utils/db.ts`                         |
+| State     | `useState` + `/api/teams` via `useTeam`, game version via `useVersions`            | `app/composables/useTeam.ts`, `app/composables/useVersions.ts`            |
+| Tooling   | pnpm ≥8, Node 24.x, oxlint (type-aware), oxfmt, Vitest + PGlite                    | `package.json`, `oxlint.config.ts`, `oxfmt.config.ts`, `vitest.config.ts` |
 
-No test framework configured.
+Tests: `pnpm test` (Vitest, two projects: `unit` node env, `nuxt` env). Pure functions in `tests/unit/`, composables in `tests/nuxt/`, API/DB invariants in `server/tests/` against in-memory Postgres (PGlite). No DB, network, or env vars required.
 
 ## 3. Project Structure
 
@@ -48,6 +48,11 @@ server/
   utils/auth.ts, db.ts, teams.ts (active-team getOrCreate), versions.ts (allowlist)
 shared/
   types/ pokemon.ts, message.ts
+tests/
+  unit/                   # pure functions (format.ts, versions.ts, team-rules.ts)
+  nuxt/                   # composables under the Nuxt test environment
+server/tests/             # API handlers + invariants against PGlite
+  helpers/                # H3 global stubs, PGlite bootstrap, request/session fixtures
 ```
 
 Aliases: `~`/`@` → `app/`, `~~`/`@@` → root, `#shared` → `shared/` via `nuxt.config.ts` / `.nuxt/tsconfig`.
@@ -118,9 +123,11 @@ All `app/components` auto-imported (`components: [{path:"~/components", pathPref
 ## 7. Dev Infra
 
 - **Package manager:** pnpm (Node 24.x) `package.json`
-- **Scripts:** `pnpm dev` (`nuxt dev`), `pnpm build` (`nuxt build`), `pnpm preview` (`nuxt preview`), `pnpm lint` (`oxlint && oxfmt --check`), `pnpm lint:fix` (`oxlint --fix && oxfmt --write`), `pnpm typecheck` (`nuxt typecheck`), `pnpm db:migrate` (`drizzle-kit migrate`)
+- **Scripts:** `pnpm dev` (`nuxt dev`), `pnpm build` (`nuxt build`), `pnpm preview` (`nuxt preview`), `pnpm lint` (`oxlint && oxfmt --check`), `pnpm lint:fix` (`oxlint --fix && oxfmt --write`), `pnpm typecheck` (`nuxt typecheck`), `pnpm test` (`nuxt prepare && vitest run`), `pnpm test:watch` (`vitest`), `pnpm test:coverage` (`vitest run --coverage`), `pnpm db:migrate` (`drizzle-kit migrate`)
+- **Tests (see `specs/041-unit-test-suite.md`):** `vitest.config.ts` declares two projects — `unit` (`environment: node`, includes `tests/unit/**` + `server/tests/**`, setup stubs H3/Nitro globals) and `nuxt` (`environment: nuxt` via `@nuxt/test-utils`, includes `tests/nuxt/**`, runtime config overridden to `https://poke.test/api`). Server API tests run handlers directly against PGlite with the real migration chain (`0003_nebulus_shaman` partial unique index included); auth/db modules are mocked per spec file. `pnpm test` needs no `DATABASE_URL`. Coverage threshold is 100% on `app/utils/format.ts` + `server/utils/versions.ts` only.
+- **Typecheck coverage of tests:** `.nuxt/tsconfig.app.json` already includes `../tests/nuxt/**/*`; `nuxt.config.ts` `typescript.tsConfig.include` adds `../tests/unit/**/*` to the same project; `server/tests/**` is covered by the server project's `../server/**/*`. Do not add `*.spec.ts` under `server/utils/` (auto-import scanning) or anywhere Nitro scans.
 - **Lint/Format:** `oxlint.config.ts` `correctness/suspicious: error`, plugins `typescript, vue, unicorn, import, oxc, promise, node`, `typeAware/typeCheck:true`, ignores `.nuxt/.output/.data`; `oxfmt.config.ts` `printWidth:100, tabWidth:2, semi:true, singleQuote:false, trailingComma:all, sortImports:true, sortTailwindcss:{entryPoint:"app/assets/css/main.css"}`
-- **CI:** `.github/workflows/lint.yml` `ubuntu-latest`, `node 24.x`, `pnpm/action-setup@v4`, `actions/setup-node@v4` cache pnpm, `pnpm install --frozen-lockfile`, `pnpm exec oxlint`, `pnpm exec oxfmt --check`, `pnpm typecheck` on push/PR to `main`
+- **CI:** `.github/workflows/lint.yml` `ubuntu-latest`, `node 24.x`, `pnpm/action-setup@v4`, `actions/setup-node@v4` cache pnpm, `pnpm install --frozen-lockfile`, `pnpm exec oxlint`, `pnpm exec oxfmt --check`, `pnpm typecheck` on push/PR to `main`; `.github/workflows/test.yml` runs `pnpm test` on the same triggers with no DB service or secrets.
 - **Editor:** `.vscode/settings.json` `editor.formatOnSave:true`, `defaultFormatter: oxc.oxc-vscode`, `source.fixAll.oxc:explicit`; extensions `oxc.oxc-vscode`, `Vue.volar`
 - **Dev server:** `nuxt.config.ts` `devServer.host:"0.0.0.0", port:5173` for container port forwarding
 - **Config:** `nuxt.config.ts` `runtimeConfig.public.pokeApiBaseUrl`/`pokeApiVersion` (defaults `https://pokeapi.co/api`, `v2`), overridable via `NUXT_PUBLIC_POKE_API_BASE_URL`/`NUXT_PUBLIC_POKE_API_VERSION`; consumed by `app/utils/apiConfig.ts`. Other env in `.env.example` (`DATABASE_URL`, `BETTER_AUTH_*`, `GITHUB_*`)

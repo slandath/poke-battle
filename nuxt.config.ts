@@ -24,6 +24,7 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     typeCheck: true,
+    tsConfig: { include: ["../tests/unit/**/*"] },
   },
   devServer: {
     host: "0.0.0.0",
