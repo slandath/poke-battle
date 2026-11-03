@@ -25,15 +25,17 @@ export function formatPokemonData(data: Pokemon): FormattedPokemon {
  * Resolve conflicting type matchups for a Pokemon.
  *
  * PokeAPI reports effectiveness per type independently, but a multi-type Pokemon
- * combines them with Pokemon's multiplicative type chart. Two combinations must
+ * combines them with Pokemon's multiplicative type chart. Three combinations must
  * be collapsed:
  *
  * - A type appearing in both `doubleDamageFrom` (2x) and `halfDamageFrom` (0.5x)
  *   multiplies to 1x, so it is neutral and removed from both.
  * - A type appearing in both `halfDamageFrom` (0.5x) and `noDamageFrom` (0x)
  *   multiplies to 0x, so immunity wins and it is removed from `halfDamageFrom`.
+ * - A type appearing in both `doubleDamageFrom` (2x) and `noDamageFrom` (0x)
+ *   multiplies to 0x, so immunity wins and it is removed from `doubleDamageFrom`.
  *
- * Overlaps are computed against the pre-filter state so the two rules do not
+ * Overlaps are computed against the pre-filter state so the rules do not
  * interfere with each other. Returns a new object; the input is not mutated.
  */
 export function resolveTypeOverlaps(relations: DamageRelations): DamageRelations {
@@ -45,7 +47,9 @@ export function resolveTypeOverlaps(relations: DamageRelations): DamageRelations
   );
 
   return {
-    doubleDamageFrom: relations.doubleDamageFrom.filter((type) => !overlapTypes.includes(type)),
+    doubleDamageFrom: relations.doubleDamageFrom.filter(
+      (type) => !overlapTypes.includes(type) && !relations.noDamageFrom.includes(type),
+    ),
     halfDamageFrom: relations.halfDamageFrom.filter(
       (type) => !overlapTypes.includes(type) && !noDamageOverlap.includes(type),
     ),
