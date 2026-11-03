@@ -4,6 +4,7 @@ import { team, teamPokemon } from "../../database/schema";
 import { requireSession } from "../../utils/auth";
 import { useDb } from "../../utils/db";
 import { rethrowHttpOrUnavailable } from "../../utils/http-error";
+import { canEnshrine } from "../../utils/team-rules";
 import { getOrCreateActiveTeam } from "../../utils/teams";
 import { normalizeVersion } from "../../utils/versions";
 
@@ -35,8 +36,9 @@ export default defineEventHandler(async (event) => {
         .where(eq(teamPokemon.teamId, userTeam.id))
         .for("update");
 
-      if (members.length === 0) {
-        return { ok: false as const, statusCode: 400, message: "Team is empty" };
+      const rule = canEnshrine(members.length);
+      if (!rule.ok) {
+        return { ok: false as const, statusCode: rule.statusCode, message: rule.message };
       }
 
       await tx
