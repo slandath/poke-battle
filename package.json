@@ -10,13 +10,16 @@
     "lint": "oxlint && oxfmt --check",
     "lint:fix": "oxlint --fix && oxfmt --write",
     "typecheck": "nuxt typecheck",
+    "test": "nuxt prepare && vitest run",
+    "test:watch": "nuxt prepare && vitest",
+    "test:coverage": "nuxt prepare && vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio --port 4983"
   },
   "dependencies": {
     "@remixicon/vue": "^4.9.0",
-    "@tailwindcss/vite": "^4.1.18",
+    "@tailwindcss/vite": "^4.3.4",
     "@vueuse/core": "^14.3.0",
     "better-auth": "^1.7.3",
     "class-variance-authority": "^0.7.1",
@@ -32,11 +35,16 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.14",
+    "@nuxt/test-utils": "^4.3.4",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.23.1",
     "@vitejs/plugin-vue": "^6.0.1",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vue/test-utils": "^2.5.1",
     "@vue/tsconfig": "^0.8.1",
     "drizzle-kit": "^0.31.10",
+    "happy-dom": "^21.0.4",
     "nuxt": "^4.5.2",
     "oxfmt": "^0.66.0",
     "oxlint": "^1.81.0",
@@ -44,7 +52,8 @@
     "postcss": "^8.5.10",
     "rollup": "^4.59.0",
     "typescript": "~5.9.3",
-    "vite": "^7.3.2",
+    "vite": "^8.2.2",
+    "vitest": "^5.1.0",
     "vue-tsc": "^3.1.4"
   },
   "engines": {

@@ -47,7 +47,9 @@ export function useTeam() {
       team.value = data;
     } catch (err: unknown) {
       if (httpStatus(err) === 401) {
-        team.value = [];
+        // A stale request for a previously selected version must not wipe the
+        // roster that the new version already loaded.
+        if (selectedVersion.value === version) team.value = [];
         return;
       }
       console.error(err);

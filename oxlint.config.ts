@@ -81,5 +81,12 @@ export default defineConfig({
         "typescript/no-redundant-type-constituents": "off",
       },
     },
+    {
+      // Test harness stubs H3 globals and builds placeholder events/responses.
+      files: ["server/tests/**/*.{ts,vue}"],
+      rules: {
+        "typescript/no-unsafe-type-assertion": "off",
+      },
+    },
   ],
 });
