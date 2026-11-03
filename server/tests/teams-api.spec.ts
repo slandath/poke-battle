@@ -46,7 +46,7 @@ interface AddResponse {
 }
 
 let db: TestDb;
-let closeDb: () => Promise<void>;
+let closeDb: (() => Promise<void>) | undefined;
 
 async function callApi<T>(
   handler: (event: never) => Promise<unknown>,
@@ -99,7 +99,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   dbRef.current = undefined;
-  await closeDb();
+  // Only assigned once `beforeAll` resolves; on a failed migration this is
+  // undefined and must not mask the migration error with a TypeError.
+  await closeDb?.();
 });
 
 beforeEach(async () => {
@@ -173,10 +175,40 @@ describe("POST /api/teams", () => {
     await expect(getActiveTeam("scarlet")).resolves.toHaveLength(1);
   });
 
+  it("keeps rosters isolated per user", async () => {
+    await seedTeam("red", ["Pikachu"]);
+
+    sessionRef.current = OTHER_USER;
+    await expect(getActiveTeam("red")).resolves.toEqual([]);
+    await expect(deleteMon("red", "Pikachu")).resolves.toEqual([]);
+
+    sessionRef.current = PRIMARY_USER;
+    await expect(getActiveTeam("red")).resolves.toEqual([
+      expect.objectContaining({ name: "Pikachu" }),
+    ]);
+  });
+
   it("rejects an invalid pokemon payload", async () => {
     await expect(
       callApi(addTeamPokemon, { body: { version: "red", pokemon: { name: "" } } }),
     ).rejects.toMatchObject({ statusCode: 400, message: "Invalid pokemon payload" });
+  });
+
+  it("never accepts more than six members under concurrent adds", async () => {
+    await seedTeam("red", ["One", "Two", "Three", "Four", "Five"]);
+
+    // PGlite serializes transactions on its single connection, so this cannot
+    // reproduce the read-committed interleaving that the team-row lock guards
+    // against on a real pool. It still pins the observable invariant: whatever
+    // the scheduling, the roster never exceeds six.
+    await Promise.allSettled([
+      addMon("red", "Six"),
+      addMon("red", "Seven"),
+      addMon("red", "Eight"),
+    ]);
+
+    const roster = await getActiveTeam("red");
+    expect(roster.length).toBeLessThanOrEqual(6);
   });
 });
 
@@ -269,23 +301,28 @@ describe("POST /api/teams/enshrine", () => {
 describe("GET /api/hall-of-fame", () => {
   it("returns memorials newest first", async () => {
     await seedTeam("red", ["Pikachu"]);
-    const first = await enshrine("red", "Older");
+    const first = await enshrine("red", "First created");
     await seedTeam("red", ["Charizard"]);
-    const second = await enshrine("red", "Newer");
+    const second = await enshrine("red", "Second created");
 
-    await db
-      .update(team)
-      .set({ enshrinedAt: new Date("2024-01-01") })
-      .where(eq(team.id, first.enshrinedId));
+    // Swap the timestamps relative to the ids: ordering by id descending would
+    // now produce the opposite result, so this test really pins enshrinedAt.
     await db
       .update(team)
       .set({ enshrinedAt: new Date("2024-06-01") })
+      .where(eq(team.id, first.enshrinedId));
+    await db
+      .update(team)
+      .set({ enshrinedAt: new Date("2024-01-01") })
       .where(eq(team.id, second.enshrinedId));
 
     const memorials = await getMemorials();
 
-    expect(memorials.map((memorial) => memorial.title)).toEqual(["Newer", "Older"]);
-    expect(memorials[0]?.pokemon.map((pokemon) => pokemon.name)).toEqual(["Charizard"]);
+    expect(memorials.map((memorial) => memorial.title)).toEqual([
+      "First created",
+      "Second created",
+    ]);
+    expect(memorials[0]?.pokemon.map((pokemon) => pokemon.name)).toEqual(["Pikachu"]);
   });
 
   it("treats `all` and a missing filter the same", async () => {
@@ -294,6 +331,17 @@ describe("GET /api/hall-of-fame", () => {
 
     await expect(getMemorials("all")).resolves.toHaveLength(1);
     await expect(getMemorials()).resolves.toHaveLength(1);
+  });
+
+  it("returns memorials from every version for `all`", async () => {
+    await seedTeam("red", ["Pikachu"]);
+    await enshrine("red");
+    await seedTeam("scarlet", ["Charizard"]);
+    await enshrine("scarlet");
+
+    const memorials = await getMemorials("all");
+
+    expect(memorials.map((memorial) => memorial.version).toSorted()).toEqual(["red", "scarlet"]);
   });
 
   it("scopes memorials by version", async () => {

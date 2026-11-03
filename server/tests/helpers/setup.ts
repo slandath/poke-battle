@@ -24,6 +24,8 @@ export function setRequest(fixture: RequestFixture = {}): void {
 }
 
 vi.stubGlobal("defineEventHandler", <T>(handler: T): T => handler);
+// Nitro registers plugins at module load; the default export is the plain function.
+vi.stubGlobal("defineNitroPlugin", <T>(plugin: T): T => plugin);
 
 vi.stubGlobal("createError", (input: { statusCode?: number; message?: string } = {}) =>
   Object.assign(new Error(input.message ?? "Error"), {

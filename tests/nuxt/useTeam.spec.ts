@@ -115,6 +115,28 @@ describe("useTeam hydration", () => {
     expect(team.value).toEqual([]);
   });
 
+  it("ignores a stale 401 after the version changed", async () => {
+    let rejectRed!: (reason?: unknown) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectRed = reject;
+        }),
+    );
+
+    const { team, selectedVersion } = mountTeam();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    fetchMock.mockResolvedValueOnce([mon("Charizard")]);
+    selectedVersion.value = "scarlet";
+    await vi.waitFor(() => expect(team.value).toEqual([mon("Charizard")]));
+
+    rejectRed({ statusCode: 401 });
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    expect(team.value).toEqual([mon("Charizard")]);
+  });
+
   it("keeps the roster when the server fails", async () => {
     fetchMock.mockResolvedValueOnce([mon("Pikachu")]);
     const { team, refresh } = mountTeam();
@@ -242,15 +264,17 @@ describe("useTeam removeFromTeam", () => {
 
 describe("useTeam enshrineTeam", () => {
   it("posts title and notes, then refreshes", async () => {
+    let roster = [mon("Pikachu")];
     fetchMock.mockImplementation(async (_url, options?: { method?: string }) => {
       if (options?.method === "POST") {
+        roster = [];
         return { success: true, title: "Enshrined!", enshrinedId: 7 };
       }
-      return [];
+      return roster;
     });
 
     const { enshrineTeam, team } = mountTeam();
-    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(team.value).toEqual([mon("Pikachu")]));
 
     const message = await enshrineTeam("Champion run", "No items");
 

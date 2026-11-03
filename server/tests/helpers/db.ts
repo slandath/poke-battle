@@ -12,9 +12,14 @@ const migrationsFolder = fileURLToPath(new URL("../../database/migrations", impo
  */
 export async function createTestDatabase() {
   const client = new PGlite();
-  const db = drizzle(client);
-  await migrate(db, { migrationsFolder });
-  return { db, client };
+  try {
+    const db = drizzle(client);
+    await migrate(db, { migrationsFolder });
+    return { db, client };
+  } catch (error) {
+    await client.close();
+    throw error;
+  }
 }
 
 export type TestDb = Awaited<ReturnType<typeof createTestDatabase>>["db"];

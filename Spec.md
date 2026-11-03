@@ -49,7 +49,7 @@ server/
 shared/
   types/ pokemon.ts, message.ts
 tests/
-  unit/                   # pure functions (format.ts, versions.ts, team-rules.ts)
+  unit/                   # pure functions (format.ts, versions.ts)
   nuxt/                   # composables under the Nuxt test environment
 server/tests/             # API handlers + invariants against PGlite
   helpers/                # H3 global stubs, PGlite bootstrap, request/session fixtures

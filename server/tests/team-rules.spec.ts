@@ -53,4 +53,12 @@ describe("canEnshrine", () => {
   it("allows a full team", () => {
     expect(canEnshrine(TEAM_MAX_SIZE)).toEqual({ ok: true });
   });
+
+  it("rejects an overfull roster", () => {
+    expect(canEnshrine(TEAM_MAX_SIZE + 1)).toEqual({
+      ok: false,
+      statusCode: 400,
+      message: "Team has more than 6 Pokemon",
+    });
+  });
 });

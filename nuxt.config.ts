@@ -21,6 +21,11 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  nitro: {
+    // The startup migration plugin reads these from `assets:migrations`.
+    // Bundling them means `drizzle-kit`'s SQL ships inside `.output`.
+    serverAssets: [{ baseName: "migrations", dir: "database/migrations" }],
+  },
   typescript: {
     strict: true,
     typeCheck: true,

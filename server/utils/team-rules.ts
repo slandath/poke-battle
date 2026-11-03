@@ -22,10 +22,16 @@ export function canAddPokemon(existing: readonly { name: string }[], name: strin
   return { ok: true };
 }
 
-/** Enshrining requires at least one Pokemon on the active roster (max is 6 by construction). */
+/** Enshrining requires 1 to TEAM_MAX_SIZE Pokemon on the active roster. */
 export function canEnshrine(memberCount: number): RuleResult {
   if (memberCount === 0) {
     return { ok: false, statusCode: 400, message: "Team is empty" };
+  }
+
+  // The add path caps the roster, but a roster created before that cap (or via
+  // concurrent adds) must not be persisted as an overfull memorial.
+  if (memberCount > TEAM_MAX_SIZE) {
+    return { ok: false, statusCode: 400, message: "Team has more than 6 Pokemon" };
   }
 
   return { ok: true };

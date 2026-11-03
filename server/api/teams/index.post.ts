@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 
-import { teamPokemon } from "../../database/schema";
+import { team, teamPokemon } from "../../database/schema";
 import { requireSession } from "../../utils/auth";
 import { useDb } from "../../utils/db";
 import { rethrowHttpOrUnavailable } from "../../utils/http-error";
@@ -43,6 +43,13 @@ export default defineEventHandler(async (event) => {
       if (!userTeam) {
         return { ok: false as const, statusCode: 500, message: "Failed to create team" };
       }
+
+      // Lock the team row before reading the roster. Locking team_pokemon alone
+      // is not enough: under READ COMMITTED a concurrent add cannot see rows
+      // inserted after its own statement started, so both adds could pass the
+      // six-member check and insert a seventh. The team-row lock makes the
+      // second add wait for the first to commit.
+      await tx.select().from(team).where(eq(team.id, userTeam.id)).for("update");
 
       const existing = await tx
         .select()
