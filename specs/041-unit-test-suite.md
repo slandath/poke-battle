@@ -184,7 +184,7 @@ Nothing to change: `oxlint` has `env: { browser, node }` already, and `oxfmt` wi
 - `normalizeVersion`: `"red"` → `"red"`; `" Red "` / `"RED"` → `"red"`; `""` / `"   "` → `null`; `"not-a-game"` → `null`; `null` / `undefined` / `42` / `{}` / `[]` → `null`.
 - `isGameVersion` narrows and agrees with `normalizeVersion` on the same fixtures.
 - `GAME_VERSIONS`: no duplicates; contains `DEFAULT_GAME_VERSION`; every entry matches `/^[a-z0-9-]+$/`.
-- drift guard: `DEFAULT_GAME_VERSION` equals the one exported by `app/composables/useVersions.ts` (**#46** — this test is what catches the duplicate before it bites).
+- drift guard: the server and client exports both equal `DEFAULT_GAME_VERSION` from `shared/constants/versions.ts` (**#46** — both modules re-export the shared constant; this test catches a locally reintroduced literal on either side).
 
 ### 4.3 `tests/nuxt/useTeam.spec.ts` → `app/composables/useTeam.ts`
 
@@ -303,7 +303,7 @@ New `.github/workflows/test.yml` mirroring `lint.yml` setup (`ubuntu-latest`, no
 - Testing Better Auth flows, live PokeAPI responses, or Drizzle migrations beyond "they apply to PGlite".
 - Coverage upload (Codecov) or PR annotations.
 - Tests for #44 (game selector move) — lands with #44.
-- The refactors tracked by #46 (shared version constant) and #47 (error codes) — #41 only pins current behavior.
+- The refactor tracked by #47 (error codes) — #41 only pins current behavior. #46 (shared version constant) has since landed; the drift guard above is now regression protection.
 
 ## 10. Resolved decisions
 

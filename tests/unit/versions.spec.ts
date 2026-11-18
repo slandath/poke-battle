@@ -6,6 +6,7 @@ import {
   normalizeVersion,
 } from "~~/server/utils/versions";
 
+import { DEFAULT_GAME_VERSION as SHARED_DEFAULT } from "#shared/constants/versions";
 import { DEFAULT_GAME_VERSION as CLIENT_DEFAULT } from "~/composables/useVersions";
 
 describe("normalizeVersion", () => {
@@ -66,9 +67,11 @@ describe("GAME_VERSIONS", () => {
 });
 
 describe("DEFAULT_GAME_VERSION", () => {
-  // #46: the constant is duplicated in server/utils/versions.ts and
-  // app/composables/useVersions.ts — this fails first if the two ever drift.
-  it("matches the client-side default", () => {
-    expect(CLIENT_DEFAULT).toBe(DEFAULT_GAME_VERSION);
+  // #46: both modules re-export the shared constant. This guard fails if a
+  // local literal is ever reintroduced on either side.
+  it("is sourced from the shared constant on both sides", () => {
+    expect(SHARED_DEFAULT).toBe("red");
+    expect(DEFAULT_GAME_VERSION).toBe(SHARED_DEFAULT);
+    expect(CLIENT_DEFAULT).toBe(SHARED_DEFAULT);
   });
 });

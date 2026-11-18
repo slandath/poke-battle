@@ -48,6 +48,7 @@ server/
   utils/auth.ts, db.ts, teams.ts (active-team getOrCreate), versions.ts (allowlist)
 shared/
   types/ pokemon.ts, message.ts
+  constants/ versions.ts   # single-source DEFAULT_GAME_VERSION
 tests/
   unit/                   # pure functions (format.ts, versions.ts)
   nuxt/                   # composables under the Nuxt test environment
