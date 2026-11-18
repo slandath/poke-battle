@@ -1,3 +1,5 @@
+import { DEFAULT_GAME_VERSION } from "#shared/constants/versions";
+
 /**
  * PokeAPI game-version allowlist (static snapshot of
  * `GET https://pokeapi.co/api/v2/version?limit=100`).
@@ -67,7 +69,7 @@ const VERSION_SET: ReadonlySet<string> = new Set<string>(VERSIONS);
 
 export const GAME_VERSIONS: readonly string[] = VERSIONS;
 
-export const DEFAULT_GAME_VERSION = "red";
+export { DEFAULT_GAME_VERSION };
 
 export function normalizeVersion(input: unknown): string | null {
   if (typeof input !== "string") return null;

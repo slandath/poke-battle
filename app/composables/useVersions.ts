@@ -1,4 +1,6 @@
-export const DEFAULT_GAME_VERSION = "red";
+import { DEFAULT_GAME_VERSION } from "#shared/constants/versions";
+
+export { DEFAULT_GAME_VERSION };
 
 interface PokeApiVersionList {
   results: Array<{ name: string }>;
