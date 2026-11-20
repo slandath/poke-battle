@@ -1,6 +1,7 @@
 import type { FormattedPokemon, Pokemon, TypeDamageResponse } from "#shared/types/pokemon";
 
 import { getPokeApiEndpoints } from "./apiConfig";
+import { pokemonCache } from "./cache";
 import { formatPokemonData, mergeDamageRelations } from "./format";
 import { pokeApiLimiter } from "./rateLimiter";
 
@@ -44,7 +45,15 @@ export async function fetchTypeDamage(typeNames: string[]): Promise<TypeDamageRe
 }
 
 export async function searchPokemon(query: string): Promise<FormattedPokemon> {
+  const cached = pokemonCache.get(query);
+  if (cached) return cached;
+
   const data = await fetchPokemon(query);
   const typeDamage = await fetchTypeDamage(data.types.map((t) => t.type.name));
-  return { ...formatPokemonData(data), damageRelations: mergeDamageRelations(typeDamage) };
+  const formatted: FormattedPokemon = {
+    ...formatPokemonData(data),
+    damageRelations: mergeDamageRelations(typeDamage),
+  };
+  pokemonCache.set(query, formatted);
+  return formatted;
 }
