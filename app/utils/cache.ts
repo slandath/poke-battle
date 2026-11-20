@@ -1,4 +1,31 @@
-import type { FormattedPokemon } from "#shared/types/pokemon";
+import type { DamageRelations, FormattedPokemon } from "#shared/types/pokemon";
+
+function isDamageRelations(value: unknown): value is DamageRelations {
+  if (typeof value !== "object" || value === null) return false;
+  if (!("doubleDamageFrom" in value) || !Array.isArray(value.doubleDamageFrom)) return false;
+  if (!("halfDamageFrom" in value) || !Array.isArray(value.halfDamageFrom)) return false;
+  return "noDamageFrom" in value && Array.isArray(value.noDamageFrom);
+}
+
+/** A persisted entry is only a hit if it still decodes to a usable Pokemon. */
+function isFormattedPokemon(value: unknown): value is FormattedPokemon {
+  if (typeof value !== "object" || value === null) return false;
+  if (!("name" in value) || typeof value.name !== "string") return false;
+  if (
+    !("types" in value) ||
+    !Array.isArray(value.types) ||
+    !value.types.every((t) => typeof t === "string")
+  )
+    return false;
+  if ("sprites" in value && value.sprites !== undefined && typeof value.sprites !== "string") {
+    return false;
+  }
+  return (
+    !("damageRelations" in value) ||
+    value.damageRelations === undefined ||
+    isDamageRelations(value.damageRelations)
+  );
+}
 
 function isCacheEntries(value: unknown): value is Record<string, CacheEntry> {
   return (
@@ -10,6 +37,7 @@ function isCacheEntries(value: unknown): value is Record<string, CacheEntry> {
         typeof entry === "object" &&
         entry !== null &&
         "data" in entry &&
+        isFormattedPokemon(entry.data) &&
         "timestamp" in entry &&
         typeof entry.timestamp === "number",
     )
@@ -48,6 +76,11 @@ export class PokemonCache {
     const entry = this.fallback.get(key) ?? this.read()[key];
     if (!entry) return null;
 
+    if (!isFormattedPokemon(entry.data)) {
+      this.delete(key);
+      return null;
+    }
+
     if (now - entry.timestamp >= CACHE_TTL_MS) {
       this.delete(key);
       return null;
@@ -62,7 +95,12 @@ export class PokemonCache {
     const entry: CacheEntry = { data, timestamp: now };
     const entries = this.read();
     entries[key] = entry;
-    if (!this.write(entries)) this.fallback.set(key, entry);
+    if (this.write(entries)) {
+      // Storage recovered: don't let an older fallback shadow the new entry.
+      this.fallback.delete(key);
+    } else {
+      this.fallback.set(key, entry);
+    }
   }
 
   /** Removes expired entries and returns how many were dropped. */

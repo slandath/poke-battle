@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { FormattedPokemon } from "#shared/types/pokemon";
-import { CACHE_TTL_MS, normalizeCacheKey, PokemonCache } from "~/utils/cache";
+import { CACHE_STORAGE_KEY, CACHE_TTL_MS, normalizeCacheKey, PokemonCache } from "~/utils/cache";
 
 class FakeStorage implements Storage {
   private readonly data = new Map<string, string>();
@@ -36,6 +36,15 @@ class FakeStorage implements Storage {
 class FailingStorage extends FakeStorage {
   override setItem(): void {
     throw new Error("QuotaExceededError");
+  }
+}
+
+class ToggleStorage extends FakeStorage {
+  failWrites = false;
+
+  override setItem(key: string, value: string): void {
+    if (this.failWrites) throw new Error("QuotaExceededError");
+    super.setItem(key, value);
   }
 }
 
@@ -86,6 +95,27 @@ describe("PokemonCache", () => {
 
     expect(cache.get("pikachu", NOW)).toEqual(mon("Pikachu"));
     expect(cache.getStats().keys).toEqual(["pikachu"]);
+  });
+
+  it("treats a malformed stored payload as a miss", () => {
+    const storage = new FakeStorage();
+    storage.setItem(CACHE_STORAGE_KEY, JSON.stringify({ pikachu: { data: {}, timestamp: NOW } }));
+    const cache = new PokemonCache(storage);
+
+    expect(cache.get("pikachu", NOW)).toBeNull();
+    expect(cache.getStats().size).toBe(0);
+  });
+
+  it("drops the fallback entry once storage writes succeed again", () => {
+    const storage = new ToggleStorage();
+    storage.failWrites = true;
+    const cache = new PokemonCache(storage);
+    cache.set("pikachu", mon("Pikachu"), NOW);
+
+    storage.failWrites = false;
+    cache.set("pikachu", mon("Raichu"), NOW + 1);
+
+    expect(cache.get("pikachu", NOW + 1)).toEqual(mon("Raichu"));
   });
 
   it("clears both storage and the memory fallback", () => {
