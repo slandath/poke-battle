@@ -4,6 +4,7 @@ import type { Message } from "#shared/types/message";
 useHead({ title: "Team - Pokemon Tools" });
 
 const { team, selectedVersion, removeFromTeam, enshrineTeam, refresh } = useTeam();
+const { versions, selectVersion } = useVersions();
 const { isAuthenticated, isPending } = useAuth();
 
 const title = ref("");
@@ -14,6 +15,11 @@ const enshrineMessage = ref<Message | null>(null);
 onMounted(() => {
   void refresh();
 });
+
+function handleVersionChange(event: Event) {
+  // useTeam() watches selectedVersion and refreshes the roster automatically.
+  selectVersion((event.target as HTMLSelectElement).value);
+}
 
 async function handleRemove(name: string) {
   await removeFromTeam(name);
@@ -48,6 +54,23 @@ async function handleEnshrine() {
       <NuxtLink to="/login" class="text-blue-600 hover:underline">Sign in</NuxtLink>
     </p>
     <template v-else>
+      <div class="flex items-center gap-2 p-2">
+        <label for="team-version" class="text-sm">Game:</label>
+        <select
+          id="team-version"
+          :value="selectedVersion"
+          class="rounded border px-2 py-1 text-sm"
+          @change="handleVersionChange"
+        >
+          <option
+            v-for="version in versions.length > 0 ? versions : [selectedVersion]"
+            :key="version"
+            :value="version"
+          >
+            {{ version }}
+          </option>
+        </select>
+      </div>
       <p v-if="team.length === 0" class="p-2">Your team is empty. Search for a pokemon to add!</p>
       <PokemonCollapse
         v-for="pokemon in team"
