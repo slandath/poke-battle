@@ -12,8 +12,17 @@ onUnmounted(() => {
 
 const { pokemonData, loading, message, search } = usePokemonSearch();
 const buttonState = ref<ButtonState>("default");
+const searchForm = ref<{ clear: () => void } | null>(null);
 const { addToTeam } = useTeam();
 const { isAuthenticated } = useAuth();
+
+async function handleSearch(query: string) {
+  if (await search(query)) searchForm.value?.clear();
+}
+
+onMounted(() => {
+  void search("pikachu");
+});
 
 function handleAddToTeam() {
   if (!isAuthenticated.value) {
@@ -45,7 +54,7 @@ function handleAddToTeam() {
   <div class="bg-white">
     <h1 class="p-2 text-3xl">Search</h1>
     <main class="flex-1 p-4">
-      <SearchForm :loading="loading" @search="search" />
+      <SearchForm ref="searchForm" :loading="loading" @search="handleSearch" />
       <div class="mt-4 flex justify-center">
         <MessageWrapper
           v-if="message && !message.success"
