@@ -18,8 +18,14 @@ const searchQuery = ref("");
 function handleSubmit() {
   if (!searchQuery.value.trim()) return;
   emit("search", searchQuery.value);
+}
+
+/** Called by the parent once a search succeeds; keeps the query on errors. */
+function clear() {
   searchQuery.value = "";
 }
+
+defineExpose({ clear });
 </script>
 
 <template>

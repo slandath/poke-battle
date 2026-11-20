@@ -6,8 +6,9 @@ export function usePokemonSearch() {
   const loading = ref(false);
   const message = ref<Message | null>(null);
 
-  async function search(query: string) {
-    if (!query.trim()) return;
+  /** Returns true only when the search succeeded, so callers can clear the input. */
+  async function search(query: string): Promise<boolean> {
+    if (!query.trim()) return false;
     message.value = null;
     pokemonData.value = null;
     loading.value = true;
@@ -17,11 +18,13 @@ export function usePokemonSearch() {
         success: true,
         title: "Pokemon Found!",
       };
+      return true;
     } catch (err) {
       message.value = {
         success: false,
         title: err instanceof Error ? err.message : "Error fetching data",
       };
+      return false;
     } finally {
       loading.value = false;
     }
