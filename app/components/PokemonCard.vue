@@ -22,7 +22,7 @@ defineProps<{
       </CardHeader>
       <CardContent>
         <div class="flex items-center justify-center rounded-md bg-gray-100 p-2 shadow">
-          <img v-if="data.sprites" :src="data.sprites" :alt="data.name" />
+          <img v-if="data.sprites" :src="data.sprites" :alt="`Sprite image of ${data.name}`" />
           <p v-else class="text-sm text-gray-500">No sprite available</p>
         </div>
         <div class="flex items-center justify-center p-2">
