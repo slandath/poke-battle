@@ -23,8 +23,9 @@ function handleSubmit() {
 </script>
 
 <template>
-  <form class="flex justify-center" @submit.prevent="handleSubmit">
+  <form class="flex justify-center" :aria-busy="loading" @submit.prevent="handleSubmit">
     <div class="flex w-full max-w-xs items-center space-x-2">
+      <label for="pokemon" class="sr-only">Pokemon Name</label>
       <Input
         id="pokemon"
         v-model="searchQuery"
@@ -32,7 +33,12 @@ function handleSubmit() {
         name="pokemon"
         placeholder="Pokemon Name"
       />
-      <Button type="submit" :disabled="loading" class="bg-blue-500 hover:cursor-pointer">
+      <Button
+        type="submit"
+        :disabled="loading"
+        :aria-label="loading ? 'Searching for Pokemon' : 'Search for Pokemon'"
+        class="bg-blue-500 hover:cursor-pointer"
+      >
         <LoaderCircle v-if="loading" class="size-4 animate-spin" />
         <Search v-else class="size-4" />
       </Button>
