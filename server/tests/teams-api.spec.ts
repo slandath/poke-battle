@@ -8,6 +8,8 @@ import getTeam from "~~/server/api/teams/index.get";
 import addTeamPokemon from "~~/server/api/teams/index.post";
 import { team, teamPokemon, user } from "~~/server/database/schema";
 
+import { TEAM_ERROR_CODES } from "#shared/constants/team-errors";
+
 import { createTestDatabase } from "./helpers/db";
 import type { TestDb } from "./helpers/db";
 import { setRequest } from "./helpers/setup";
@@ -155,6 +157,7 @@ describe("POST /api/teams", () => {
 
     await expect(addMon("red", "Seven")).rejects.toMatchObject({
       statusCode: 400,
+      data: { code: TEAM_ERROR_CODES.TEAM_FULL },
       message: "Team is full",
     });
   });
@@ -164,6 +167,7 @@ describe("POST /api/teams", () => {
 
     await expect(addMon("red", "Pikachu")).rejects.toMatchObject({
       statusCode: 400,
+      data: { code: TEAM_ERROR_CODES.ALREADY_ON_TEAM },
       message: "Already on team!",
     });
   });
@@ -246,6 +250,7 @@ describe("POST /api/teams/enshrine", () => {
   it("rejects an empty roster", async () => {
     await expect(enshrine("red")).rejects.toMatchObject({
       statusCode: 400,
+      data: { code: TEAM_ERROR_CODES.TEAM_EMPTY },
       message: "Team is empty",
     });
   });

@@ -27,7 +27,12 @@ export default defineEventHandler(async (event) => {
     const result = await db.transaction(async (tx) => {
       const userTeam = await getOrCreateActiveTeam(tx, session.user.id, version);
       if (!userTeam) {
-        return { ok: false as const, statusCode: 500, message: "Failed to load team" };
+        return {
+          ok: false as const,
+          statusCode: 500,
+          code: undefined,
+          message: "Failed to load team",
+        };
       }
 
       const members = await tx
@@ -38,7 +43,12 @@ export default defineEventHandler(async (event) => {
 
       const rule = canEnshrine(members.length);
       if (!rule.ok) {
-        return { ok: false as const, statusCode: rule.statusCode, message: rule.message };
+        return {
+          ok: false as const,
+          statusCode: rule.statusCode,
+          code: rule.code,
+          message: rule.message,
+        };
       }
 
       await tx
@@ -52,14 +62,23 @@ export default defineEventHandler(async (event) => {
         .returning();
 
       if (!fresh) {
-        return { ok: false as const, statusCode: 500, message: "Failed to reset team" };
+        return {
+          ok: false as const,
+          statusCode: 500,
+          code: undefined,
+          message: "Failed to reset team",
+        };
       }
 
       return { ok: true as const, enshrinedId: userTeam.id };
     });
 
     if (!result.ok) {
-      throw createError({ statusCode: result.statusCode, message: result.message });
+      throw createError({
+        statusCode: result.statusCode,
+        message: result.message,
+        data: result.code ? { code: result.code } : undefined,
+      });
     }
 
     return { success: true, title: "Enshrined!", enshrinedId: result.enshrinedId };

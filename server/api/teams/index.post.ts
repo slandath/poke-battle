@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm";
 
+import { TEAM_ERROR_CODES } from "#shared/constants/team-errors";
+
 import { team, teamPokemon } from "../../database/schema";
 import { requireSession } from "../../utils/auth";
 import { useDb } from "../../utils/db";
@@ -41,7 +43,12 @@ export default defineEventHandler(async (event) => {
       const userTeam = await getOrCreateActiveTeam(tx, session.user.id, version);
 
       if (!userTeam) {
-        return { ok: false as const, statusCode: 500, message: "Failed to create team" };
+        return {
+          ok: false as const,
+          statusCode: 500,
+          code: undefined,
+          message: "Failed to create team",
+        };
       }
 
       // Lock the team row before reading the roster. Locking team_pokemon alone
@@ -59,7 +66,12 @@ export default defineEventHandler(async (event) => {
 
       const rule = canAddPokemon(existing, body.pokemon.name);
       if (!rule.ok) {
-        return { ok: false as const, statusCode: rule.statusCode, message: rule.message };
+        return {
+          ok: false as const,
+          statusCode: rule.statusCode,
+          code: rule.code,
+          message: rule.message,
+        };
       }
 
       try {
@@ -77,14 +89,23 @@ export default defineEventHandler(async (event) => {
       } catch (err: any) {
         const pgCode = err?.code ?? err?.cause?.code;
         if (pgCode === "23505" || err?.message?.includes("team_pokemon_team_id_name_unique")) {
-          return { ok: false as const, statusCode: 400, message: "Already on team!" };
+          return {
+            ok: false as const,
+            statusCode: 400,
+            code: TEAM_ERROR_CODES.ALREADY_ON_TEAM,
+            message: "Already on team!",
+          };
         }
         throw err;
       }
     });
 
     if (!result.ok) {
-      throw createError({ statusCode: result.statusCode, message: result.message });
+      throw createError({
+        statusCode: result.statusCode,
+        message: result.message,
+        data: result.code ? { code: result.code } : undefined,
+      });
     }
 
     return { success: true, title: "Added!", pokemon: result.pokemon };

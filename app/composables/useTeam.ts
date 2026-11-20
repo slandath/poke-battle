@@ -1,3 +1,8 @@
+import {
+  isTeamErrorCode,
+  TEAM_ERROR_CODES,
+  type TeamErrorCode,
+} from "#shared/constants/team-errors";
 import type { Message } from "#shared/types/message";
 import type { FormattedPokemon } from "#shared/types/pokemon";
 
@@ -21,6 +26,16 @@ function httpMessage(err: unknown): string | undefined {
   }
   if ("statusMessage" in err && typeof err.statusMessage === "string") return err.statusMessage;
   return undefined;
+}
+
+/** Nitro puts `createError({ data })` in the JSON body, one level under ofetch's `error.data`. */
+function httpErrorCode(err: unknown): TeamErrorCode | undefined {
+  if (typeof err !== "object" || err === null || !("data" in err)) return undefined;
+  const body: unknown = err.data;
+  if (typeof body !== "object" || body === null || !("data" in body)) return undefined;
+  const payload: unknown = body.data;
+  if (typeof payload !== "object" || payload === null || !("code" in payload)) return undefined;
+  return isTeamErrorCode(payload.code) ? payload.code : undefined;
 }
 
 function apiMessage(err: unknown, fallback: string): string {
@@ -73,9 +88,10 @@ export function useTeam() {
       await refresh();
       return res;
     } catch (err: unknown) {
-      const msg = httpMessage(err);
-      if (msg === "Team is full" || msg === "Already on team!") {
-        return { success: false, title: msg };
+      const code = httpErrorCode(err);
+      if (code === TEAM_ERROR_CODES.TEAM_FULL || code === TEAM_ERROR_CODES.ALREADY_ON_TEAM) {
+        const fallback = code === TEAM_ERROR_CODES.TEAM_FULL ? "Team is full" : "Already on team!";
+        return { success: false, title: apiMessage(err, fallback) };
       }
       if (httpStatus(err) === 401) {
         await navigateTo("/login");

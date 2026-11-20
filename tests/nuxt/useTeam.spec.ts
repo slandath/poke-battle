@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope } from "vue";
 
 import { clearNuxtState } from "#imports";
+import { TEAM_ERROR_CODES } from "#shared/constants/team-errors";
 
 const { navigateToMock } = vi.hoisted(() => ({ navigateToMock: vi.fn() }));
 const fetchMock = vi.hoisted(() => vi.fn());
@@ -12,10 +13,11 @@ mockNuxtImport("$fetch", () => fetchMock);
 
 const mon = (name: string) => ({ name, types: ["Normal"], sprites: undefined });
 
-const teamFull = () =>
-  Object.assign(new Error("Team is full"), {
+/** Mirrors ofetch: error.data is the response body; Nitro nests createError data in `data`. */
+const ruleError = (code: string, message: string) =>
+  Object.assign(new Error(message), {
     statusCode: 400,
-    data: { message: "Team is full" },
+    data: { message, data: { code } },
   });
 
 type TeamApi = ReturnType<typeof useTeam>;
@@ -175,11 +177,27 @@ describe("useTeam addToTeam", () => {
     const { addToTeam } = mountTeam();
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
-    fetchMock.mockRejectedValueOnce(teamFull());
+    fetchMock.mockRejectedValueOnce(ruleError(TEAM_ERROR_CODES.TEAM_FULL, "Team is full"));
 
     await expect(addToTeam(mon("Pikachu"))).resolves.toEqual({
       success: false,
       title: "Team is full",
+    });
+    expect(navigateToMock).not.toHaveBeenCalled();
+  });
+
+  it("branches on the code even when the server message changes", async () => {
+    fetchMock.mockResolvedValueOnce([]);
+    const { addToTeam } = mountTeam();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    fetchMock.mockRejectedValueOnce(
+      ruleError(TEAM_ERROR_CODES.TEAM_FULL, "This roster is at capacity"),
+    );
+
+    await expect(addToTeam(mon("Pikachu"))).resolves.toEqual({
+      success: false,
+      title: "This roster is at capacity",
     });
     expect(navigateToMock).not.toHaveBeenCalled();
   });
@@ -190,10 +208,7 @@ describe("useTeam addToTeam", () => {
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
     fetchMock.mockRejectedValueOnce(
-      Object.assign(new Error("Already on team!"), {
-        statusCode: 400,
-        data: { message: "Already on team!" },
-      }),
+      ruleError(TEAM_ERROR_CODES.ALREADY_ON_TEAM, "Already on team!"),
     );
 
     await expect(addToTeam(mon("Pikachu"))).resolves.toEqual({
