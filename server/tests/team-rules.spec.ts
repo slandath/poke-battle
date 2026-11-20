@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { canAddPokemon, canEnshrine, TEAM_MAX_SIZE } from "~~/server/utils/team-rules";
 
+import { TEAM_ERROR_CODES } from "#shared/constants/team-errors";
+
 const roster = (size: number) =>
   Array.from({ length: size }, (_, index) => ({ name: `Pokemon ${index + 1}` }));
 
@@ -17,6 +19,7 @@ describe("canAddPokemon", () => {
     expect(canAddPokemon(roster(TEAM_MAX_SIZE), "Pikachu")).toEqual({
       ok: false,
       statusCode: 400,
+      code: TEAM_ERROR_CODES.TEAM_FULL,
       message: "Team is full",
     });
   });
@@ -25,6 +28,7 @@ describe("canAddPokemon", () => {
     expect(canAddPokemon(roster(2), "Pokemon 2")).toEqual({
       ok: false,
       statusCode: 400,
+      code: TEAM_ERROR_CODES.ALREADY_ON_TEAM,
       message: "Already on team!",
     });
   });
@@ -43,7 +47,12 @@ describe("canAddPokemon", () => {
 
 describe("canEnshrine", () => {
   it("rejects an empty roster", () => {
-    expect(canEnshrine(0)).toEqual({ ok: false, statusCode: 400, message: "Team is empty" });
+    expect(canEnshrine(0)).toEqual({
+      ok: false,
+      statusCode: 400,
+      code: TEAM_ERROR_CODES.TEAM_EMPTY,
+      message: "Team is empty",
+    });
   });
 
   it("allows a single Pokemon", () => {
@@ -58,6 +67,7 @@ describe("canEnshrine", () => {
     expect(canEnshrine(TEAM_MAX_SIZE + 1)).toEqual({
       ok: false,
       statusCode: 400,
+      code: TEAM_ERROR_CODES.TEAM_OVERFULL,
       message: "Team has more than 6 Pokemon",
     });
   });

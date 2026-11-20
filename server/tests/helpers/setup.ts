@@ -27,10 +27,13 @@ vi.stubGlobal("defineEventHandler", <T>(handler: T): T => handler);
 // Nitro registers plugins at module load; the default export is the plain function.
 vi.stubGlobal("defineNitroPlugin", <T>(plugin: T): T => plugin);
 
-vi.stubGlobal("createError", (input: { statusCode?: number; message?: string } = {}) =>
-  Object.assign(new Error(input.message ?? "Error"), {
-    statusCode: input.statusCode ?? 500,
-  }),
+vi.stubGlobal(
+  "createError",
+  (input: { statusCode?: number; message?: string; data?: unknown } = {}) =>
+    Object.assign(new Error(input.message ?? "Error"), {
+      statusCode: input.statusCode ?? 500,
+      ...(input.data !== undefined ? { data: input.data } : {}),
+    }),
 );
 
 vi.stubGlobal("readBody", async () => request.body);
